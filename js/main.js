@@ -30,7 +30,7 @@ const sec=(t,b,alt)=>`<section class="section${alt?" section--alt":""}"><div cla
 const cards=a=>`<div class="grid">${a.map(([t,d])=>`<div class="card"><h3>${t}</h3><p>${d}</p></div>`).join("")}</div>`;
 const methodCards=()=>`<div class="method-grid">${S.method.map(([t,d],i)=>`<article class="method-step"><span class="method-step__number">0${i+1}</span><h3>${t}</h3><p>${d}</p></article>`).join("")}</div>`;
 const approachCards=()=>`<div class="approach-grid">${S.approach.map(([t,d],i)=>`<article class="approach-card"><span class="approach-card__number">0${i+1}</span><h3>${t}</h3><p>${d}</p></article>`).join("")}</div>`;
-const projectCards=()=>`<div class="grid">${S.projects.map(p=>`<article class="card">${img(p.image,p.alt)}<h3>${p.title}</h3><p>${p.summary}</p><a href="${p.href}">Lire l’étude de cas →</a></article>`).join("")}</div>`;
+const projectCards=()=>`<div class="grid">${S.projects.map(p=>`<article class="card">${img(p.image,p.alt)}<h3>${p.title}</h3><p>${p.summary}</p>${p.href?`<a href="${p.href}">Lire l\u00e9tude de cas \u2192</a>`:`<p class="note">${p.note||"Pr\u00e9sentation \u00e0 compl\u00e9ter"}</p>`}</article>`).join("")}</div>`;
 const expertiseIcons=[
   '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="13"></circle><path d="M24 7v7M24 34v7M7 24h7M34 24h7"></path></svg>',
   '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M10 34 24 10l14 24"></path><path d="M15 27h18M19 20h10"></path></svg>',
@@ -86,6 +86,56 @@ document.getElementById("theme").onclick=()=>{theme=theme==="dark"?"light":"dark
 
 /* Apparition douce, désactivée si prefers-reduced-motion */
 const reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
+/* Scroll depth: the home hero recedes as the story begins, while content
+   sections gain a subtle layered entrance. Keep the work on one rAF frame. */
+if(!reduce){
+  const hero=document.querySelector(".hero");
+  const sections=[...document.querySelectorAll("main .section")];
+  const textureStart=document.querySelector(".conviction-section")||sections[1]||sections[0];
+  let scrollFrame=0;
+  const updateScrollDepth=()=>{
+    scrollFrame=0;
+    const y=window.scrollY||0;
+    const pageProgress=Math.max(0,Math.min(1,y/Math.max(1,document.documentElement.scrollHeight-window.innerHeight)));
+    root.style.setProperty("--scroll-progress",`${pageProgress}`);
+    const textureStartY=textureStart?Math.max(0,y+textureStart.getBoundingClientRect().top-window.innerHeight*.78):0;
+    const textureRange=Math.max(1,document.documentElement.scrollHeight-window.innerHeight-textureStartY);
+    const textureProgress=Math.max(0,Math.min(1,(y-textureStartY)/textureRange));
+    root.style.setProperty("--texture-y",`${(textureProgress-.5)*72}px`);
+    root.style.setProperty("--texture-scale",`${1.42-textureProgress*.42}`);
+    root.style.setProperty("--texture-opacity",y>=textureStartY?"1":"0");
+    if(hero){
+      const progress=Math.min(1,Math.max(0,y/Math.max(1,hero.offsetHeight)));
+      hero.style.setProperty("--hero-scroll",progress.toFixed(3));
+      hero.style.setProperty("--hero-y",`${progress*8}vh`);
+      hero.style.setProperty("--hero-scale",`${1+progress*.12}`);
+      hero.style.setProperty("--hero-image-scale",`${1.1+progress*.12}`);
+      hero.style.setProperty("--copy-y",`${progress*-12}vh`);
+      hero.style.setProperty("--copy-scale",`${1-progress*.08}`);
+      hero.style.setProperty("--copy-opacity",`${Math.max(0,1-progress*1.4)}`);
+      hero.style.setProperty("--bottom-opacity",`${Math.max(0,1-progress*3)}`);
+    }
+    const depthTargets=[...document.querySelectorAll(".section, .card, .method-step, .approach-card, .quote-card, .gallery figure")];
+    const depths=depthTargets.map(el=>{
+      const rect=el.getBoundingClientRect();
+      const distance=(rect.top+rect.height*.5-window.innerHeight*.5)/window.innerHeight;
+      const depth=Math.max(-1,Math.min(1,distance));
+      const proximity=1-Math.min(1,Math.abs(distance));
+      return {el,depth,proximity};
+    });
+    depths.forEach(({el,depth,proximity})=>{
+      el.style.setProperty("--scroll-depth-y",`${depth*18}px`);
+      el.style.setProperty("--scroll-depth-rotate",`${depth*-1.15}deg`);
+      el.style.setProperty("--scroll-depth-z",`${proximity*24}px`);
+      const maxZoom=el.classList.contains("section") ? .06 : .14;
+      el.style.setProperty("--scroll-depth-scale",`${1+proximity*maxZoom}`);
+    });
+  };
+  const requestScrollDepth=()=>{if(!scrollFrame)scrollFrame=requestAnimationFrame(updateScrollDepth)};
+  window.addEventListener("scroll",requestScrollDepth,{passive:true});
+  window.addEventListener("resize",requestScrollDepth,{passive:true});
+  updateScrollDepth();
+}
 const headlineSlides=[...document.querySelectorAll(".hero__headline-slide")];
 if(headlineSlides.length>1&&!reduce){
   let activeSlide=0;

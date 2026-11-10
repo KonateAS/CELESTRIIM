@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" fill="none">
+  <defs>
+    <linearGradient id="tube" x1="565" y1="120" x2="1180" y2="870" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fff"/>
+      <stop offset=".28" stop-color="#f8f8f6"/>
+      <stop offset=".55" stop-color="#d5d8d6"/>
+      <stop offset=".72" stop-color="#fff"/>
+      <stop offset="1" stop-color="#e5e7e5"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="640" y1="90" x2="1140" y2="930" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fff" stop-opacity=".72"/>
+      <stop offset=".5" stop-color="#fff" stop-opacity=".04"/>
+      <stop offset="1" stop-color="#fff" stop-opacity=".5"/>
+    </linearGradient>
+  </defs>
+  <path d="M820-100c-15 190 267 220 278 428 9 175-179 303-361 210-176-90-130-302 51-335 181-32 382 121 337 323-40 181-242 303-405 408" stroke="#707775" stroke-opacity=".16" stroke-width="142" stroke-linecap="round"/>
+  <path d="M820-100c-15 190 267 220 278 428 9 175-179 303-361 210-176-90-130-302 51-335 181-32 382 121 337 323-40 181-242 303-405 408" stroke="url(#tube)" stroke-width="118" stroke-linecap="round"/>
+  <path d="M784-100c-14 181 255 214 267 421 9 164-164 283-331 198-154-78-112-262 50-292 166-30 350 110 310 293-34 158-211 264-363 368" stroke="url(#shine)" stroke-width="24" stroke-linecap="round"/>
+</svg>
