@@ -1,7 +1,7 @@
 /* Données du site. Pour raccorder une API/CMS : remplacer cet objet par un fetch() dans main.js. */
 const SITE = {
   name: "CELESTRIIUM",
-  logo: "assets/logo.svg", // À REMPLACER par le fichier de marque officiel (non fourni).
+  logo: "assets/logo-wordmark.jpeg",
   contact: { email: "", phone: "", address: "" }, // Renseigner uniquement avec des informations validées.
   nav: [
     ["index.html","Accueil"],["a-propos.html","À propos"],["expertises.html","Expertises"],

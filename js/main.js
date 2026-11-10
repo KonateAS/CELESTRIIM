@@ -84,8 +84,10 @@ menu.onclick=()=>setMenu(!nav.classList.contains("open"));
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){setMenu(false);menu.focus()}});
 document.getElementById("theme").onclick=()=>{theme=theme==="dark"?"light":"dark";root.dataset.theme=theme;localStorage.setItem("theme",theme)};
 
-/* Apparition douce, désactivée si prefers-reduced-motion */
-const reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
+/* Apparition douce, désactivée seulement si l'utilisateur a demandé un mouvement réduit.
+   On mobile, on garde l'animation pour respecter le design attendu. */
+const preferReduced=matchMedia("(prefers-reduced-motion:reduce)").matches;
+const reduce=preferReduced && !matchMedia("(max-width: 900px)").matches;
 /* Scroll depth: the home hero recedes as the story begins, while content
    sections gain a subtle layered entrance. Keep the work on one rAF frame. */
 if(!reduce){
