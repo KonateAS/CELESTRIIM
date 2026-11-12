@@ -1,7 +1,8 @@
 /* Données du site. Pour raccorder une API/CMS : remplacer cet objet par un fetch() dans main.js. */
 const SITE = {
   name: "CELESTRIIUM",
-  logo: "assets/logo-wordmark.jpeg",
+  logoLight: "assets/logo-black.png",
+  logoDark: "assets/logo-white.png",
   contact: { email: "", phone: "", address: "" }, // Renseigner uniquement avec des informations validées.
   nav: [
     ["index.html","Accueil"],["a-propos.html","À propos"],["expertises.html","Expertises"],
@@ -43,6 +44,7 @@ const SITE = {
     {href:"cdc-immersion.html", title:"CDC IMMERSION — Découvrir les métiers de l’audiovisuel sportif", summary:"Une immersion pratique pour permettre à de jeunes participants de découvrir la couverture audiovisuelle d’un événement sportif, en situation réelle et avec encadrement.", image:"assets/img/cdc-immersion/cdc-immersion-01.jpg", alt:"Immersion CDC dans les métiers de l’audiovisuel sportif"},
     {title:"Communication événementielle et production audiovisuelle", summary:"Présentation de cette catégorie de réalisation. Les références, prestations et éléments de contexte seront ajoutés après validation.", image:"assets/img/rivotra/rivotra-04.jpg", alt:"Communication événementielle et production audiovisuelle", note:"Présentation à compléter"}
   ],
+  partnerBrands: ["RIVOTRA","CDC IMMERSION"],
   rivotra: {
     intro:"À Adzopé, CELESTRIIUM a conçu et coordonné une activation territoriale autour du football de proximité, associant RIVOTRA, une compétition Seniors et U17 et une immersion pratique aux métiers de l’audiovisuel avec CDC IMMERSION.",
     context:"Le projet utilise le football de proximité comme terrain de rencontre, d’animation locale et d’apprentissage.",
