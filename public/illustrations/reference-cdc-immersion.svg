@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="80" y1="0" x2="1100" y2="675" gradientUnits="userSpaceOnUse"><stop stop-color="#EAE8DF"/><stop offset="1" stop-color="#D8DED3"/></linearGradient>
+    <linearGradient id="door" x1="560" y1="120" x2="900" y2="540" gradientUnits="userSpaceOnUse"><stop stop-color="#285847"/><stop offset="1" stop-color="#173D32"/></linearGradient>
+  </defs>
+  <path fill="url(#bg)" d="M0 0h1200v675H0z"/><circle cx="770" cy="338" r="238" fill="#D3C39A" fill-opacity=".35"/>
+  <path d="M494 544V190c0-31 25-56 56-56h322c31 0 56 25 56 56v354H494Z" fill="url(#door)"/>
+  <path d="M559 544V218c0-21 17-38 38-38h228c21 0 38 17 38 38v326H559Z" fill="#F5F4EF"/>
+  <path d="M622 544V267c0-18 14-32 32-32h118c18 0 32 14 32 32v277H622Z" fill="#D8DED3"/>
+  <path d="m685 403 28-30 28 30m-28-30v115" stroke="#9D8759" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="424" cy="274" r="45" fill="#DB9577"/><circle cx="424" cy="274" r="16" fill="#F5F4EF"/>
+  <circle cx="399" cy="434" r="31" fill="#C6A86C"/><circle cx="399" cy="434" r="10" fill="#F5F4EF"/>
+  <circle cx="970" cy="258" r="36" fill="#9BADA0"/><circle cx="970" cy="258" r="12" fill="#F5F4EF"/>
+  <path d="M424 319v79m-25 36h-74m105-81h65m475-95h-86" stroke="#173D32" stroke-opacity=".32" stroke-width="2" stroke-dasharray="5 8"/>
+  <path d="M104 200h247M104 230h190" stroke="#173D32" stroke-opacity=".28" stroke-width="3" stroke-linecap="round"/>
+  <text x="102" y="322" fill="#173D32" font-family="Arial,sans-serif" font-size="39" font-weight="600" letter-spacing="4">CDC IMMERSION</text>
+  <text x="104" y="374" fill="#776C4F" font-family="Georgia,serif" font-size="31" font-style="italic">formation · compétences</text>
+  <text x="104" y="570" fill="#173D32" fill-opacity=".55" font-family="Arial,sans-serif" font-size="14" letter-spacing="3">ILLUSTRATION PROVISOIRE · PAS UNE PHOTO OFFICIELLE</text>
+</svg>

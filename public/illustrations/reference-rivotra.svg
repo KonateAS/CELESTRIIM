@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="80" y1="50" x2="1100" y2="650" gradientUnits="userSpaceOnUse"><stop stop-color="#173D32"/><stop offset="1" stop-color="#285847"/></linearGradient>
+    <linearGradient id="ball" x1="650" y1="160" x2="1000" y2="510" gradientUnits="userSpaceOnUse"><stop stop-color="#E8D6A8"/><stop offset="1" stop-color="#C6A86C"/></linearGradient>
+    <pattern id="lines" width="34" height="34" patternUnits="userSpaceOnUse"><path d="M0 34 34 0" stroke="#fff" stroke-opacity=".055" stroke-width="1"/></pattern>
+  </defs>
+  <path fill="url(#bg)" d="M0 0h1200v675H0z"/><path fill="url(#lines)" d="M0 0h1200v675H0z"/>
+  <circle cx="828" cy="338" r="233" stroke="#E8D6A8" stroke-opacity=".24" stroke-width="2"/><circle cx="828" cy="338" r="196" stroke="#E8D6A8" stroke-opacity=".35" stroke-width="1.5" stroke-dasharray="5 12"/>
+  <circle cx="828" cy="338" r="143" fill="url(#ball)"/>
+  <path d="m828 259 54 40-21 64h-66l-21-64 54-40Z" fill="#173D32"/><path d="m828 259-49-17-47 34 18 62m132-39 49-17 47 34-18 62m-156 68-4 56 49 34 47-34-18-57m-122 1-49 18-18 57 47 34 49-34" stroke="#173D32" stroke-width="12" stroke-linejoin="round"/>
+  <path d="M94 180h250M94 210h174M94 240h210" stroke="#E8D6A8" stroke-opacity=".68" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="125" cy="478" r="7" fill="#DB9577"/><circle cx="163" cy="478" r="7" fill="#E8D6A8"/><circle cx="201" cy="478" r="7" fill="#fff" fill-opacity=".75"/><circle cx="239" cy="478" r="7" fill="#DB9577"/><circle cx="277" cy="478" r="7" fill="#E8D6A8"/>
+  <path d="M94 530h250" stroke="#fff" stroke-opacity=".2"/>
+  <text x="92" y="326" fill="#F5F4EF" font-family="Arial,sans-serif" font-size="42" font-weight="600" letter-spacing="5">SPORT · JEUNESSE</text>
+  <text x="92" y="378" fill="#E8D6A8" font-family="Georgia,serif" font-size="32" font-style="italic">cohésion sociale</text>
+  <text x="94" y="570" fill="#fff" fill-opacity=".55" font-family="Arial,sans-serif" font-size="14" letter-spacing="3">ILLUSTRATION PROVISOIRE · PAS UNE PHOTO OFFICIELLE</text>
+</svg>

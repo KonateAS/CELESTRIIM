@@ -1,0 +1,30 @@
+ALTER TABLE "Expertise" ADD COLUMN "coverImage" TEXT;
+ALTER TABLE "Page" ADD COLUMN "coverImage" TEXT;
+
+INSERT INTO "MediaAsset" ("id", "filename", "storageKey", "mimeType", "sizeBytes", "altText") VALUES
+  ('visual-impact-territoires', 'impact-territoires.svg', '/illustrations/impact-territoires.svg', 'image/svg+xml', 2323, 'Paysage abstrait de collines et de rivière pour illustrer un avenir partagé'),
+  ('visual-expertise-strategie', 'expertise-strategie.svg', '/illustrations/expertise-strategie.svg', 'image/svg+xml', 1779, 'Cercles reliés autour d’un cap stratégique et de repères de mesure'),
+  ('visual-expertise-projets', 'expertise-projets.svg', '/illustrations/expertise-projets.svg', 'image/svg+xml', 1653, 'Paysage en terrasses traversé par une rivière, illustration de projets ancrés dans leur territoire'),
+  ('visual-expertise-communication', 'expertise-communication.svg', '/illustrations/expertise-communication.svg', 'image/svg+xml', 1858, 'Composition éditoriale et courbe de données pour évoquer une communication responsable'),
+  ('visual-expertise-partenariats', 'expertise-partenariats.svg', '/illustrations/expertise-partenariats.svg', 'image/svg+xml', 1517, 'Réseau de contributions reliées autour d’un objectif commun'),
+  ('visual-demo-projet', 'demo-projet-territoire.svg', '/illustrations/demo-projet-territoire.svg', 'image/svg+xml', 1938, 'Illustration provisoire d’un projet de territoire, sans lien avec une réalisation réelle'),
+  ('visual-demo-mesure', 'demo-mesure-impact.svg', '/illustrations/demo-mesure-impact.svg', 'image/svg+xml', 1849, 'Illustration provisoire d’un tableau de suivi d’impact, sans données réelles'),
+  ('visual-editorial', 'editorial-perspectives.svg', '/illustrations/editorial-perspectives.svg', 'image/svg+xml', 1511, 'Illustration éditoriale de pages ouvertes et de lignes de réflexion')
+ON CONFLICT ("storageKey") DO NOTHING;
+
+UPDATE "Expertise" SET "coverImage" = '/illustrations/expertise-strategie.svg' WHERE "slug" = 'strategie-conseil-rse' AND "coverImage" IS NULL;
+UPDATE "Expertise" SET "coverImage" = '/illustrations/expertise-projets.svg' WHERE "slug" = 'projets-a-impact' AND "coverImage" IS NULL;
+UPDATE "Expertise" SET "coverImage" = '/illustrations/expertise-communication.svg' WHERE "slug" = 'communication-responsable' AND "coverImage" IS NULL;
+UPDATE "Expertise" SET "coverImage" = '/illustrations/expertise-partenariats.svg' WHERE "slug" = 'partenariats-activation' AND "coverImage" IS NULL;
+UPDATE "Page" SET "coverImage" = '/illustrations/impact-territoires.svg' WHERE "slug" = 'a-propos' AND "coverImage" IS NULL;
+UPDATE "Page" SET "coverImage" = '/illustrations/expertise-partenariats.svg' WHERE "slug" = 'partenariats' AND "coverImage" IS NULL;
+
+INSERT INTO "Project" ("id", "title", "slug", "summary", "challenge", "contribution", "results", "coverImage", "status", "createdAt", "updatedAt") VALUES
+  ('demo-projet-territoire', '[DÉMONSTRATION — BROUILLON] Initiative locale pour un territoire durable', 'demo-territoire-durable', 'Fiche de démonstration à remplacer par une réalisation documentée et autorisée.', 'CONTENU PROVISOIRE — À remplacer : décrire le contexte, les besoins exprimés par les acteurs locaux et les objectifs convenus. Aucun client ni résultat réel n’est associé à cette fiche.', 'CONTENU PROVISOIRE — À remplacer : préciser le rôle effectivement joué par CELESTRIIUM, les partenaires confirmés, les activités menées et les périodes concernées.', 'CONTENU PROVISOIRE — À remplacer après vérification : ajouter uniquement des résultats documentés, leur période de mesure, leurs sources et les autorisations de publication.', '/illustrations/demo-projet-territoire.svg', 'DRAFT', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+  ('demo-projet-mesure', '[DÉMONSTRATION — BROUILLON] Suivi des effets d’un programme à impact', 'demo-suivi-impact', 'Fiche de démonstration à remplacer par une réalisation documentée et autorisée.', 'CONTENU PROVISOIRE — À remplacer : préciser la situation de départ, les publics concernés et les objectifs du programme.', 'CONTENU PROVISOIRE — À remplacer : décrire les responsabilités, les méthodes de suivi et les contributions vérifiées des parties prenantes.', 'CONTENU PROVISOIRE — À remplacer après vérification : renseigner les indicateurs, la méthode de calcul, les résultats validés et les preuves communicables.', '/illustrations/demo-mesure-impact.svg', 'DRAFT', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+ON CONFLICT ("slug") DO NOTHING;
+
+INSERT INTO "Article" ("id", "title", "slug", "excerpt", "body", "coverImage", "status", "createdAt", "updatedAt") VALUES
+  ('demo-article-preuves', '[DÉMONSTRATION — BROUILLON] Communiquer sur l’impact avec justesse', 'demo-communication-impact', 'Trame éditoriale provisoire, à relire et documenter avant toute publication.', 'CONTENU DE DÉMONSTRATION — À reprendre avant publication.\n\nUne communication responsable distingue les engagements pris, les actions réalisées et les effets effectivement observés.\n\nPour chaque affirmation, ajouter une source, une période, une méthode et les limites de ce que les données permettent de conclure. Ne publier aucun chiffre ni témoignage sans vérification et autorisation.', '/illustrations/editorial-perspectives.svg', 'DRAFT', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+  ('demo-article-mesure', '[DÉMONSTRATION — BROUILLON] Construire un suivi de projet utile aux décisions', 'demo-suivi-projet', 'Trame éditoriale provisoire, à relire et documenter avant toute publication.', 'CONTENU DE DÉMONSTRATION — À reprendre avant publication.\n\nUn dispositif de suivi relie les objectifs du projet aux activités, aux indicateurs et aux responsabilités de collecte.\n\nLes indicateurs doivent être compréhensibles, proportionnés aux moyens disponibles et interprétés avec leur contexte. Ce texte est une base de travail et ne décrit pas une mission réalisée par CELESTRIIUM.', '/illustrations/demo-mesure-impact.svg', 'DRAFT', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+ON CONFLICT ("slug") DO NOTHING;

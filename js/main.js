@@ -1,5 +1,6 @@
-/* Rendu des pages à partir de SITE (content.js). Aucune dépendance. */
-(function(){
+﻿/* Rendu des pages à partir de SITE (content.js). Aucune dépendance. */
+(async function(){
+try{const response=await fetch("/api/site-content",{headers:{Accept:"application/json"}});if(response.ok)Object.assign(SITE,await response.json())}catch{}
 const S=SITE, page=document.body.dataset.page, root=document.documentElement;
 const FALLBACK="data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><rect width="640" height="360" fill="#d9d2bd"/><circle cx="320" cy="180" r="60" fill="none" stroke="#0f3d2e" stroke-width="6"/><text x="320" y="300" text-anchor="middle" font-family="sans-serif" fill="#0f3d2e">Image à fournir</text></svg>');
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -30,14 +31,16 @@ const sec=(t,b,alt)=>`<section class="section${alt?" section--alt":""}"><div cla
 const cards=a=>`<div class="grid">${a.map(([t,d])=>`<div class="card scroll-reveal"><h3>${t}</h3><p>${d}</p></div>`).join("")}</div>`;
 const methodCards=()=>`<div class="method-grid">${S.method.map(([t,d],i)=>`<article class="method-step scroll-reveal"><span class="method-step__number">0${i+1}</span><h3>${t}</h3><p>${d}</p></article>`).join("")}</div>`;
 const approachCards=()=>`<div class="approach-grid">${S.approach.map(([t,d],i)=>`<article class="approach-card scroll-reveal"><span class="approach-card__number">0${i+1}</span><h3>${t}</h3><p>${d}</p></article>`).join("")}</div>`;
-const projectCards=(recent=false)=>`<div class="grid${recent?" recent-projects__grid":""}">${S.projects.map(p=>`<article class="card scroll-reveal${recent?" recent-project-card":""}">${recent?`<div class="recent-project-card__media">${img(p.image,p.alt)}</div>`:img(p.image,p.alt)}<h3>${p.title}</h3><p>${p.summary}</p>${p.href?`<a href="${p.href}">Lire l\u00e9tude de cas \u2192</a>`:`<p class="note">${p.note||"Pr\u00e9sentation \u00e0 compl\u00e9ter"}</p>`}</article>`).join("")}</div>`;
+const projectCards=(recent=false)=>`<div class="grid${recent?" recent-projects__grid":""}">${S.projects.map(p=>`<article class="card scroll-reveal${recent?" recent-project-card":""}">${recent?`<div class="recent-project-card__media">${img(p.image,p.alt)}</div>`:img(p.image,p.alt)}<h3>${esc(p.title)}</h3><p>${esc(p.summary)}</p>${p.href?`<a href="${p.href}">Lire l\u00e9tude de cas \u2192</a>`:`<p class="note">${p.note||"Pr\u00e9sentation \u00e0 compl\u00e9ter"}</p>`}</article>`).join("")}</div>`;
+const gallerySlider=(items,label)=>`<div class="project-gallery" data-project-gallery role="region" aria-roledescription="carrousel" aria-label="Galerie ${esc(label)}"><div class="project-gallery__backdrop" data-gallery-backdrop aria-hidden="true"></div><div class="project-gallery__frame"><div class="project-gallery__head"><span>CELESTRIIUM · ARCHIVES</span><span data-gallery-count>01 / ${String(items.length).padStart(2,"0")}</span></div><div class="project-gallery__viewport" data-gallery-viewport tabindex="0" aria-label="Galerie d&#8217;images. Utilisez les flèches du clavier pour parcourir."><div class="project-gallery__track">${items.map((g,i)=>`<figure class="project-gallery__slide" data-gallery-slide aria-current="${i===0}">${img(g.src,g.alt)}<figcaption>${esc(g.cap||g.alt)}</figcaption></figure>`).join("")}</div></div><div class="project-gallery__foot"><span class="project-gallery__caption" data-gallery-caption>${esc(items[0]?.cap||items[0]?.alt||"")}</span><div class="project-gallery__controls"><button type="button" data-gallery-prev aria-label="Image précédente">&#8592;</button><button type="button" data-gallery-next aria-label="Image suivante">&#8594;</button></div><span class="project-gallery__hint">EXPLORER LE PROJET</span></div></div></div>`;
+const recentProjectCarousel=()=>{const items=S.projects.filter(p=>p.href);const dots=items.map((_,i)=>`<button type="button" data-home-project-dot="${i}" aria-label="Afficher la réalisation ${i+1}" aria-pressed="${i===0}"></button>`).join("");return `<div class="recent-project-carousel" data-home-project-carousel role="region" aria-roledescription="carrousel" aria-label="Réalisations récentes"><div class="recent-project-carousel__viewport" data-home-project-viewport tabindex="0" aria-label="Parcourir les réalisations avec les flèches du clavier"><div class="recent-project-carousel__track">${items.map((p,i)=>`<article class="recent-project-slide" data-home-project-slide aria-current="${i===0}" role="group" aria-label="${i+1} sur ${items.length}"><div class="recent-project-slide__media">${img(p.image,p.alt)}</div><div class="recent-project-slide__copy"><span>${esc(p.client||"CELESTRIIUM &#183; PROJET")}</span><h3>${esc(p.title)}</h3><p>${esc(p.summary)}</p><a href="${esc(p.href)}">Découvrir le projet <span aria-hidden="true">&#8599;</span></a></div></article>`).join("")}</div></div><div class="recent-project-carousel__controls"><button type="button" data-home-project-prev aria-label="Réalisation précédente">&#8592;</button><div>${dots}</div><button type="button" data-home-project-toggle aria-pressed="false" aria-label="Mettre en pause le d&#233;filement automatique"><span aria-hidden="true">&#10074;&#10074;</span></button><span data-home-project-count aria-live="polite">01 / ${String(items.length).padStart(2,"0")}</span><button type="button" data-home-project-next aria-label="Réalisation suivante">&#8594;</button></div></div>`};
 const expertiseIcons=[
   '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="13"></circle><path d="M24 7v7M24 34v7M7 24h7M34 24h7"></path></svg>',
   '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M10 34 24 10l14 24"></path><path d="M15 27h18M19 20h10"></path></svg>',
   '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 12h32v24H8z"></path><path d="m8 16 16 12 16-12"></path></svg>',
   '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="15"></circle><path d="M24 9v15l10 7"></path></svg>'
 ];
-const expertises=()=>`<div class="expertise-grid">${S.expertises.map((e,i)=>{const isFeatured=/\bRSE\b/i.test(e.t);return `<article class="card expertise-card${isFeatured?" expertise-card--focus":""}"><div class="expertise-card__icon">${expertiseIcons[i]}</div><h3>${e.t}</h3><p>${e.d}</p><p class="expertise-card__label"><strong>Besoins couverts</strong></p><ul>${e.n.map(x=>`<li>${x}</li>`).join("")}</ul><a class="expertise-card__link" href="contact.html?sujet=${encodeURIComponent(e.t)}"><span>Nous contacter</span><span aria-hidden="true">→</span></a></article>`}).join("")}</div>`;
+const expertises=()=>`<div class="expertise-grid">${S.expertises.map((e,i)=>{const isFeatured=/\bRSE\b/i.test(e.t);return `<article class="card expertise-card${isFeatured?" expertise-card--focus":""}"><div class="expertise-card__icon">${expertiseIcons[i]}</div><h3>${esc(e.t)}</h3><p>${esc(e.d)}</p><p class="expertise-card__label"><strong>Besoins couverts</strong></p><ul>${e.n.map(x=>`<li>${esc(x)}</li>`).join("")}</ul><a class="expertise-card__link" href="contact.html?sujet=${encodeURIComponent(e.t)}"><span>Nous contacter</span><span aria-hidden="true">→</span></a></article>`}).join("")}</div>`;
 const stats=a=>`<div class="grid">${a.map(([n,l])=>{const target=Number(String(n).replace(/[^\d]/g,""));const prefix=String(n).match(/^[^\d]*/)[0];return `<div class="card scroll-reveal"><div class="stat"${target?` aria-label="${esc(n)}"`:""}>${target?`${prefix}<span class="count-up" data-count="${target}">0</span>`:esc(n)}</div>${l}</div>`}).join("")}</div>`;
 
 const R=S.rivotra, C=S.cdcImmersion;
@@ -47,33 +50,38 @@ home:()=>`<section class="hero"><div class="hero__glow hero__glow--one" aria-hid
  +`<section class="section conviction-section"><div class="wrap conviction-container"><div class="conviction-content scroll-reveal"><span class="section-tag">Notre vision</span><h2>La conviction</h2><p class="lead">${S.conviction}</p><a class="conviction-link" href="a-propos.html"><span>Découvrir notre approche</span><span class="conviction-link__arrow" aria-hidden="true">→</span></a></div><div class="conviction-visual"><div class="quote-card scroll-reveal golden-orbit"><span class="quote-mark" aria-hidden="true">“</span><p>Relier l’ambition économique aux responsabilités sociales et environnementales.</p><span class="quote-author">CELESTRIIUM</span></div></div></div></section>`
  +sec("Les 4 expertises clés",expertises(),1)
  +sec("Notre approche",approachCards()+`<p class="section__action"><a class="btn btn--ghost golden-orbit" href="realisations.html">Découvrir nos réalisations</a></p>`)
- +sec("Réalisations récentes",`<div class="recent-projects">${projectCards(true)}</div>`,1)+cta(),
-about:()=>sec("À propos",`<p>${S.about.mission}</p><h3>Nos valeurs</h3>${cards(S.about.values)}<h3>Notre manière de travailler</h3><p>${S.about.way}</p>`)+cta(),
+ +sec("Réalisations récentes",`<div class="recent-projects">${recentProjectCarousel()}</div>`,1)+cta(),
+about:()=>`<section class="section about-intro"><div class="wrap about-intro__grid"><div class="about-intro__copy scroll-reveal"><p class="section-tag">Notre raison d’être</p><h2>Un impact durable se construit avec celles et ceux qui vivent le terrain.</h2><p class="lead">${S.about.mission}</p><p>${S.about.way}</p><a class="btn btn--ghost golden-orbit" href="expertises.html">Découvrir nos expertises <span aria-hidden="true">→</span></a></div><figure class="about-intro__image scroll-reveal">${img("public/illustrations/photos/consultation.jpg","Échange de travail collectif autour d’un projet à impact")}<figcaption>Écouter les réalités locales avant d’agir.</figcaption></figure></div></section>`
+ +`<section class="section section--alt about-values"><div class="wrap"><div class="about-section-heading scroll-reveal"><p class="section-tag">Nos repères</p><h2>Des principes qui guident chaque projet</h2><p>Une manière de travailler exigeante, attentive aux personnes, aux territoires et aux résultats.</p></div><div class="grid about-values__grid">${S.about.values.map(([t,d],i)=>`<article class="card about-value-card scroll-reveal"><span class="about-value-card__number">0${i+1}</span><h3>${t}</h3><p>${d}</p></article>`).join("")}</div></div></section>`
+ +sec("Du terrain aux résultats",approachCards()+`<p class="about-method-note">${S.about.way}</p>`)
+ +cta(),
 expertises:()=>sec("Expertises",expertises()),
 projects:()=>sec("Réalisations",projectCards()),
 partners:()=>sec("Partenariats",`<p>${S.partners}</p>`)+cta(),
-articles:()=>sec("Perspectives",`<div class="grid">${S.articles.map(a=>`<article class="card scroll-reveal">${img(a.image,a.alt)}<h3>${a.title}</h3><p>${a.summary}</p><p class="note"><time datetime="${a.date}">${new Date(a.date).toLocaleDateString("fr-FR")}</time>${a.example?" · exemple à compléter":""}</p><a href="${a.href}">Lire →</a></article>`).join("")}</div>`),
-rivotra:()=>sec(S.projects[0].title,`<p>${R.intro}</p>`)
- +sec("Contexte et objectifs",`<p>${R.context}</p>`,1)
+articles:()=>sec("Perspectives",`<div class="grid">${S.articles.map(a=>`<article class="card scroll-reveal">${img(a.image,a.alt)}<h3>${esc(a.title)}</h3><p>${esc(a.summary)}</p><p class="note"><time datetime="${a.date}">${new Date(a.date).toLocaleDateString("fr-FR")}</time>${a.example?" · exemple à compléter":""}</p><a href="${a.href}">Lire →</a></article>`).join("")}</div>`),
+rivotra:()=>sec(esc((S.projects.find(p=>p.href==="rivotra-freedom-cup-2026.html")||S.projects[0]).title),`<p>${esc(R.intro)}</p>`)
+ +sec("Contexte et objectifs",`<p>${esc(R.context)}</p>`,1)
  +sec("Le rôle de CELESTRIIUM",`<p>${R.roleC}</p>`)+sec("Le rôle de CDC IMMERSION",`<p>${R.roleCDC}</p>`,1)
  +sec("Le tournoi",stats(R.tournament)+`<div style="height:1rem"></div>`+cards(R.champions))
- +sec("Résultats",stats(R.results)+`<p class="note">${R.resultsNote}</p>`,1)
+ +sec("Résultats",stats(R.results)+`<p class="note">${esc(R.resultsNote)}</p>`,1)
  +sec("Relais radio",R.radio.map(t=>`<p>${t}</p>`).join(""))
- +sec("Galerie",`<div class="gallery">${R.gallery.map(g=>`<figure class="scroll-reveal" style="margin:0">${img(g.src,g.alt)}<figcaption>${g.cap}</figcaption></figure>`).join("")}</div>`,1)
+ +sec("Galerie",`${gallerySlider(R.gallery,"RIVOTRA Freedom Cup 2026")}`,1)
  +sec("Vidéo",`<video controls playsinline preload="metadata" poster="${R.video.poster}"><source src="${R.video.src}" type="video/mp4">Votre navigateur ne lit pas cette vidéo.</video>`)
  +sec("Partenaires",`<p>${R.partners.join(" · ")}</p>`,1)+cta(),
-cdc:()=>sec(S.projects[1].title,`<p>${C.intro}</p>`)
+cdc:()=>sec(esc((S.projects.find(p=>p.href==="cdc-immersion.html")||S.projects[1]).title),`<p>${esc(C.intro)}</p>`)
  +sec("Le principe de l’immersion",`<p>${C.context}</p>`,1)
- +sec("Galerie",`<div class="gallery">${C.gallery.map(g=>`<figure class="scroll-reveal" style="margin:0">${img(g.src,g.alt)}<figcaption>${g.cap}</figcaption></figure>`).join("")}</div>`)
+ +sec("Galerie",`${gallerySlider(C.gallery,"CDC IMMERSION")}`)
  +cta(),
-contact:()=>sec("Contact",`<p class="note"><strong>Formulaire de démonstration :</strong> aucun serveur n’est connecté, les messages ne sont pas envoyés.</p>
-<form id="form" novalidate>
-<div><label for="nom">Nom</label><input id="nom" required autocomplete="name"><div class="err" id="e-nom"></div></div>
-<div><label for="org">Organisation (facultatif)</label><input id="org" autocomplete="organization"></div>
-<div><label for="email">Adresse e-mail</label><input id="email" type="email" required autocomplete="email"><div class="err" id="e-email"></div></div>
-<div><label for="sujet">Sujet</label><input id="sujet" required><div class="err" id="e-sujet"></div></div>
-<div><label for="msg">Message</label><textarea id="msg" rows="6" required></textarea><div class="err" id="e-msg"></div></div>
-<button class="btn" type="submit">Envoyer (démonstration)</button><div id="status" role="status" aria-live="polite"></div></form>
+contact:()=>sec("Contact",`<p>Décrivez-nous votre besoin : nous prendrons le temps d’en discuter.</p>
+<form id="form" action="/contact" method="post" novalidate>
+<div><label for="nom">Nom</label><input id="nom" name="name" required autocomplete="name" maxlength="120"><div class="err" id="e-nom"></div></div>
+<div><label for="org">Organisation (facultatif)</label><input id="org" name="organization" autocomplete="organization" maxlength="180"></div>
+<div><label for="email">Adresse e-mail</label><input id="email" name="email" type="email" required autocomplete="email" maxlength="254"><div class="err" id="e-email"></div></div>
+<div><label for="sujet">Sujet</label><input id="sujet" name="subject" required maxlength="180"><div class="err" id="e-sujet"></div></div>
+<div><label for="msg">Message</label><textarea id="msg" name="message" rows="6" required minlength="10" maxlength="5000"></textarea><div class="err" id="e-msg"></div></div>
+<label class="contact-consent"><input type="checkbox" name="privacyConsent" required><span>J’accepte que mes informations soient utilisées pour répondre à ma demande.</span></label><div class="err" id="e-consent"></div>
+<label class="visually-hidden" aria-hidden="true">Votre site web<input name="website" tabindex="-1" autocomplete="off"></label>
+<button class="btn" type="submit">Envoyer mon message</button><div id="status" role="status" aria-live="polite"></div></form>
 ${S.contact.email?`<p>E-mail : ${esc(S.contact.email)}</p>`:""}`)
 };
 const pageHeadings={
@@ -86,7 +94,7 @@ const pageHeadings={
   cdc:["Immersion audiovisuelle","Apprendre en situation réelle, au plus près du terrain.",C.intro],
   contact:["Contact","Parlons de votre prochain projet.","Décrivez-nous votre besoin : nous prendrons le temps d’en discuter."]
 };
-const pageHeading=page==="home"?"":(()=>{const [eyebrow,title,text]=pageHeadings[page];return `<section class="page-hero"><div class="wrap page-hero__content scroll-reveal"><p class="eyebrow">${eyebrow}</p><h1>${title}</h1><p>${text}</p></div><span class="page-hero__orb" aria-hidden="true"></span></section>`})();
+const pageHeading=page==="home"?"":(()=>{const [eyebrow,title,text]=pageHeadings[page];return `<section class="page-hero"><div class="wrap page-hero__content scroll-reveal"><p class="eyebrow">${eyebrow}</p><h1>${title}</h1><p>${text}</p></div></section>`})();
 document.getElementById("app").innerHTML=header()+`<main id="main">${pageHeading}${views[page]()}</main>`+footer()+
 `<button class="icon-btn theme-toggle" id="theme" aria-label="Basculer entre thème clair et sombre">◐</button>`;
 
@@ -178,7 +186,52 @@ document.querySelectorAll(".count-up").forEach(el=>{
   else countObserver.observe(el);
 });
 
-const tiltTargets=[...document.querySelectorAll(".card:not(.expertise-card), .gallery figure")];
+document.querySelectorAll("[data-project-gallery]").forEach(gallery=>{
+  const viewport=gallery.querySelector("[data-gallery-viewport]"),track=gallery.querySelector(".project-gallery__track");
+  const slides=[...gallery.querySelectorAll("[data-gallery-slide]")],backdrop=gallery.querySelector("[data-gallery-backdrop]"),count=gallery.querySelector("[data-gallery-count]"),caption=gallery.querySelector("[data-gallery-caption]");
+  let active=0,touchX=null;
+  const show=index=>{
+    if(!slides.length)return;
+    active=(index+slides.length)%slides.length;
+    const slide=slides[active],photo=slide.querySelector("img"),x=viewport.clientWidth/2-(slide.offsetLeft+slide.offsetWidth/2);
+    track.style.transform=`translate3d(${x}px,-50%,0)`;
+    slides.forEach((item,i)=>item.setAttribute("aria-current",String(i===active)));
+    count.textContent=`${String(active+1).padStart(2,"0")} / ${String(slides.length).padStart(2,"0")}`;
+    caption.textContent=slide.querySelector("figcaption")?.textContent||"";
+    if(photo)backdrop.style.setProperty("--gallery-image",`url(${JSON.stringify(photo.currentSrc||photo.src)})`);
+  };
+  gallery.querySelector("[data-gallery-prev]").onclick=()=>show(active-1);
+  gallery.querySelector("[data-gallery-next]").onclick=()=>show(active+1);
+  viewport.addEventListener("keydown",event=>{if(event.key==="ArrowLeft"){event.preventDefault();show(active-1)}if(event.key==="ArrowRight"){event.preventDefault();show(active+1)}});
+  viewport.addEventListener("touchstart",event=>{touchX=event.changedTouches[0]?.clientX??null},{passive:true});
+  viewport.addEventListener("touchend",event=>{const end=event.changedTouches[0]?.clientX;if(touchX===null||end===undefined||Math.abs(end-touchX)<45)return;show(active+(end<touchX?1:-1));touchX=null},{passive:true});
+  window.addEventListener("resize",()=>show(active),{passive:true});
+  show(0);
+});
+
+const recentCarousel=document.querySelector("[data-home-project-carousel]");
+if(recentCarousel){
+  const viewport=recentCarousel.querySelector("[data-home-project-viewport]"),slides=[...recentCarousel.querySelectorAll("[data-home-project-slide]")],dots=[...recentCarousel.querySelectorAll("[data-home-project-dot]")],count=recentCarousel.querySelector("[data-home-project-count]");
+  const toggle=recentCarousel.querySelector("[data-home-project-toggle]"),toggleIcon=toggle?.querySelector("span"),motionPreference=matchMedia("(prefers-reduced-motion:reduce)");
+  let active=0,scrollFrame=0,timer=null,hovering=false,focused=false,userPaused=false;
+  if(toggle)toggle.hidden=motionPreference.matches;
+  const stopAuto=()=>{if(timer){clearInterval(timer);timer=null}};
+  const startAuto=()=>{stopAuto();if(slides.length>1&&!motionPreference.matches&&!document.hidden&&!hovering&&!focused&&!userPaused)timer=setInterval(()=>goTo(active+1),3000)};
+  const setActive=index=>{active=Math.max(0,Math.min(index,slides.length-1));slides.forEach((slide,i)=>slide.setAttribute("aria-current",String(i===active)));dots.forEach((dot,i)=>dot.setAttribute("aria-pressed",String(i===active)));if(count)count.textContent=`${String(active+1).padStart(2,"0")} / ${String(slides.length).padStart(2,"0")}`};
+  const goTo=index=>{if(!slides.length)return;const next=(index+slides.length)%slides.length,box=viewport.getBoundingClientRect(),card=slides[next].getBoundingClientRect(),left=viewport.scrollLeft+card.left-box.left-(viewport.clientWidth-card.width)/2;viewport.scrollTo({left,behavior:motionPreference.matches?"auto":"smooth"});setActive(next)};
+  const setPaused=paused=>{userPaused=paused;if(toggle){toggle.setAttribute("aria-pressed",String(paused));toggle.setAttribute("aria-label",paused?"Reprendre le d\u00e9filement automatique":"Mettre en pause le d\u00e9filement automatique");if(toggleIcon)toggleIcon.innerHTML=paused?"&#9654;":"&#10074;&#10074;"}if(paused)stopAuto();else{focused=false;startAuto()}};
+  toggle?.addEventListener("click",()=>setPaused(!userPaused));
+  recentCarousel.querySelector("[data-home-project-prev]").onclick=()=>goTo(active-1);recentCarousel.querySelector("[data-home-project-next]").onclick=()=>goTo(active+1);dots.forEach((dot,i)=>dot.onclick=()=>goTo(i));
+  viewport.addEventListener("scroll",()=>{if(scrollFrame)cancelAnimationFrame(scrollFrame);scrollFrame=requestAnimationFrame(()=>{scrollFrame=0;const center=viewport.getBoundingClientRect().left+viewport.clientWidth/2;let nearest=0;slides.forEach((slide,i)=>{if(Math.abs(slide.getBoundingClientRect().left+slide.offsetWidth/2-center)<Math.abs(slides[nearest].getBoundingClientRect().left+slides[nearest].offsetWidth/2-center))nearest=i});setActive(nearest)})},{passive:true});
+  viewport.addEventListener("keydown",event=>{if(event.key==="ArrowLeft"){event.preventDefault();goTo(active-1)}if(event.key==="ArrowRight"){event.preventDefault();goTo(active+1)}});
+  recentCarousel.addEventListener("pointerenter",()=>{hovering=true;stopAuto()});recentCarousel.addEventListener("pointerleave",()=>{hovering=false;startAuto()});
+  recentCarousel.addEventListener("focusin",()=>{focused=true;stopAuto()});recentCarousel.addEventListener("focusout",event=>{if(!recentCarousel.contains(event.relatedTarget)){focused=false;startAuto()}});
+  document.addEventListener("visibilitychange",()=>document.hidden?stopAuto():startAuto());
+  motionPreference.addEventListener?.("change",()=>{if(toggle)toggle.hidden=motionPreference.matches;if(document.hidden||motionPreference.matches)stopAuto();else startAuto()});
+  setActive(0);startAuto();
+}
+
+const tiltTargets=[...document.querySelectorAll(".card:not(.expertise-card):not(.recent-project-card), .gallery figure")];
 if(!reduce)tiltTargets.push(...document.querySelectorAll(".tilt"));
 tiltTargets.forEach(el=>{
 el.addEventListener("pointermove",e=>{
@@ -188,12 +241,18 @@ el.style.setProperty("--tilt-x",`${y*-5}deg`);el.style.setProperty("--tilt-y",`$
 el.addEventListener("pointerleave",()=>{el.style.setProperty("--tilt-x","0deg");el.style.setProperty("--tilt-y","0deg")});
 });
 
-/* Formulaire : validation navigateur uniquement, aucun envoi */
+/* Formulaire de contact reli? au serveur. */
 const f=document.getElementById("form");
 if(f){const q=new URLSearchParams(location.search).get("sujet");if(q)f.querySelector("#sujet").value=q;
-f.onsubmit=e=>{e.preventDefault();let ok=true;
-[["nom","Indiquez votre nom."],["email","Indiquez une adresse e-mail valide."],["sujet","Indiquez un sujet."],["msg","Écrivez votre message."]].forEach(([id,m])=>{
-const el=f.querySelector("#"+id),bad=!el.value.trim()||(id==="email"&&!el.checkValidity());
-document.getElementById("e-"+id).textContent=bad?m:"";el.setAttribute("aria-invalid",bad);if(bad)ok=false});
-document.getElementById("status").innerHTML=ok?'<div class="status">Formulaire valide. Il s’agit d’une démonstration : aucun message n’a été envoyé.</div>':"";};}
+f.onsubmit=async e=>{e.preventDefault();let ok=true;
+[["nom","Indiquez votre nom."],["email","Indiquez une adresse e-mail valide."],["sujet","Indiquez un sujet."],["msg","Écrivez un message d’au moins 10 caractères."]].forEach(([id,m])=>{
+const el=f.querySelector("#"+id),bad=!el.value.trim()||(id==="email"&&!el.checkValidity())||(id==="msg"&&el.value.trim().length<10);
+document.getElementById("e-"+id).textContent=bad?m:"";el.setAttribute("aria-invalid",String(bad));if(bad)ok=false});
+const consent=f.querySelector('[name="privacyConsent"]'),consentError=document.getElementById("e-consent");
+consentError.textContent=consent.checked?"":"Veuillez accepter l’utilisation de vos informations pour recevoir une réponse.";consent.setAttribute("aria-invalid",String(!consent.checked));if(!consent.checked)ok=false;
+const status=document.getElementById("status");if(!ok){status.textContent="Vérifiez les champs signalés.";return;}
+const button=f.querySelector('[type="submit"]');button.disabled=true;status.textContent="Envoi en cours…";
+try{const response=await fetch(f.action,{method:"POST",body:new URLSearchParams(new FormData(f)),headers:{Accept:"application/json","Content-Type":"application/x-www-form-urlencoded"}});const result=await response.json();if(!response.ok)throw new Error(result.message||"L’envoi a échoué.");f.reset();status.textContent=result.message;f.querySelectorAll('[aria-invalid="true"]').forEach(el=>el.removeAttribute("aria-invalid"));}
+catch(error){status.textContent=error instanceof Error?error.message:"Impossible d’envoyer le message. Réessayez.";}
+finally{button.disabled=false;}};}
 })();

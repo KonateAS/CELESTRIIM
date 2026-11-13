@@ -42,7 +42,7 @@ const SITE = {
   projects: [
     {href:"rivotra-freedom-cup-2026.html", title:"RIVOTRA Freedom Cup 2026 — Le sport comme terrain d’activation et d’apprentissage", summary:"À Adzopé, une activation territoriale autour du football de proximité, associant RIVOTRA, une compétition Seniors et U17 et une immersion aux métiers de l’audiovisuel avec CDC IMMERSION.", image:"assets/img/rivotra-cover.jpg", alt:"Affiche de la RIVOTRA Freedom Cup 2026"},
     {href:"cdc-immersion.html", title:"CDC IMMERSION — Découvrir les métiers de l’audiovisuel sportif", summary:"Une immersion pratique pour permettre à de jeunes participants de découvrir la couverture audiovisuelle d’un événement sportif, en situation réelle et avec encadrement.", image:"assets/img/cdc-immersion/cdc-immersion-01.jpg", alt:"Immersion CDC dans les métiers de l’audiovisuel sportif"},
-    {title:"Communication événementielle et production audiovisuelle", summary:"Présentation de cette catégorie de réalisation. Les références, prestations et éléments de contexte seront ajoutés après validation.", image:"assets/img/rivotra/rivotra-04.jpg", alt:"Communication événementielle et production audiovisuelle", note:"Présentation à compléter"}
+    {title:"Communication événementielle et production audiovisuelle", summary:"Présentation de cette catégorie de réalisation. Les références, prestations et éléments de contexte seront ajoutés après validation.", image:"public/illustrations/photos/media-production.jpg", alt:"Communication événementielle et production audiovisuelle", note:"Présentation à compléter"}
   ],
   partnerBrands: ["RIVOTRA","CDC IMMERSION"],
   rivotra: {
@@ -72,6 +72,6 @@ const SITE = {
       cap:`CDC IMMERSION — visuel ${i+1}`
     }))
   },
-  articles:[{title:"Article d’exemple à compléter",summary:"Emplacement réservé à un article fourni par CELESTRIIUM.",date:"2026-01-01",image:"assets/img/article-1.jpg",alt:"Illustration à fournir",href:"#",example:true}],
+  articles:[{title:"Article d’exemple à compléter",summary:"Emplacement réservé à un article fourni par CELESTRIIUM.",date:"2026-01-01",image:"public/illustrations/photos/community.jpg",alt:"Rassemblement communautaire en extérieur, photo illustrative",href:"#",example:true}],
   footerText:"Agence de conseil et d’activation à impact basée en Côte d’Ivoire."
 };

@@ -1,0 +1,169 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+enum PublicationStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ContactStatus {
+  NEW
+  IN_PROGRESS
+  CLOSED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  role          String    @default("ADMIN")
+  accounts      Account[]
+  sessions      Session[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([sessionToken])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+model Page {
+  id              String            @id @default(cuid())
+  title           String
+  slug            String            @unique
+  summary         String            @default("")
+  body            String            @default("")
+  coverImage      String?
+  status          PublicationStatus @default(DRAFT)
+  seoTitle        String?
+  seoDescription  String?
+  publishedAt    DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model Expertise {
+  id          String            @id @default(cuid())
+  title       String
+  slug        String            @unique
+  summary     String            @default("")
+  body        String            @default("")
+  coverImage  String?
+  sortOrder   Int               @default(0)
+  status      PublicationStatus @default(DRAFT)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model Project {
+  id          String            @id @default(cuid())
+  title       String
+  slug        String            @unique
+  client      String?
+  summary     String            @default("")
+  challenge   String            @default("")
+  contribution String           @default("")
+  results     String            @default("")
+  coverImage  String?
+  videoUrl    String?
+  gallery     ProjectGalleryImage[]
+  status      PublicationStatus @default(DRAFT)
+  publishedAt DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model ProjectGalleryImage {
+  id           String     @id @default(cuid())
+  projectId    String
+  mediaAssetId String
+  sortOrder    Int        @default(0)
+  project      Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  mediaAsset   MediaAsset @relation(fields: [mediaAssetId], references: [id], onDelete: Restrict)
+
+  @@unique([projectId, mediaAssetId])
+  @@index([projectId, sortOrder])
+}
+
+model Article {
+  id             String            @id @default(cuid())
+  title          String
+  slug           String            @unique
+  excerpt        String            @default("")
+  body           String            @default("")
+  coverImage     String?
+  seoTitle       String?
+  seoDescription String?
+  status         PublicationStatus @default(DRAFT)
+  publishedAt    DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+}
+
+model ContactMessage {
+  id        String        @id @default(cuid())
+  name      String
+  email     String
+  organization String?
+  jobTitle     String?
+  subject   String?
+  message   String
+  privacyConsent Boolean @default(false)
+  status    ContactStatus @default(NEW)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([status, createdAt])
+}
+
+model MediaAsset {
+  id          String   @id @default(cuid())
+  filename    String
+  storageKey  String   @unique
+  mimeType    String
+  sizeBytes   Int
+  altText     String   @default("")
+  createdAt   DateTime @default(now())
+  projectGalleryImages ProjectGalleryImage[]
+}
