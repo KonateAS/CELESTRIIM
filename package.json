@@ -12,6 +12,7 @@
     "check": "node --check server.mjs && node --check lib/site.mjs && node --check js/app.js",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio"
   },

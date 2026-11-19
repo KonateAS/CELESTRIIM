@@ -596,6 +596,14 @@ const server = createServer(async (request, response) => {
     const url = new URL(request.url || "/", `http://${request.headers.host || "localhost"}`);
     const pathname = decodeURI(url.pathname);
     if (request.method === "GET" || request.method === "HEAD") {
+      if (pathname === "/healthz") {
+        try {
+          await prisma.$queryRaw`SELECT 1`;
+          return json(response, 200, { status: "ok" });
+        } catch {
+          return json(response, 503, { status: "unavailable" });
+        }
+      }
       if (pathname === "/api/site-content") return json(response, 200, await getStaticSiteData());
       const legacyPages = {
         "/": "index.html", "/index.html": "index.html",

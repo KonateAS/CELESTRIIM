@@ -15,6 +15,22 @@ Prérequis : Node.js 20.9 ou ultérieur et PostgreSQL 17.
 
 Le site est servi sur `http://localhost:3000`. L’administration est accessible sur `http://localhost:3000/admin/login`. Les messages du formulaire apparaissent dans l’administration, rubrique **Messages**.
 
+## Mise en production
+
+Le serveur écoute sur `0.0.0.0` et utilise la variable `PORT` fournie par l’hébergeur. La route `GET /healthz` renvoie `200` si PostgreSQL est joignable et `503` sinon ; elle peut servir de contrôle de santé à la plateforme.
+
+Configurer dans l’environnement de production :
+
+- `NODE_ENV=production` et `PORT` (généralement fourni automatiquement).
+- `DATABASE_URL` vers le PostgreSQL de production et `SHADOW_DATABASE_URL` vers une base de travail distincte pour Prisma.
+- `AUTH_SECRET` aléatoire d’au moins 32 caractères, `ADMIN_EMAIL` et un `ADMIN_PASSWORD` unique d’au moins 14 caractères.
+- `SITE_URL` avec l’origine HTTPS finale, par exemple `https://www.example.com`.
+- `MEDIA_STORAGE_DIR` vers un volume persistant. Sans ce volume, les images importées peuvent disparaître lors d’un redémarrage ou d’un remplacement de l’instance.
+
+Commandes de déploiement : installer avec `npm ci`, générer le client avec `npm run db:generate`, appliquer les migrations avec `npm run db:deploy`, puis démarrer avec `npm start`. Pour une base neuve, exécuter une fois `npm run db:seed` avec les variables d’administration définies ; cette commande ajoute également les contenus de départ. Ne pas lancer `db:migrate` en production : cette commande est réservée au développement.
+
+Avant l’ouverture publique, vérifier `/healthz`, la connexion à `/admin/login`, les sauvegardes PostgreSQL et la persistance des médias. Aucun hébergeur n’est configuré dans ce dépôt ; les variables et commandes ci-dessus sont indépendantes de la plateforme.
+
 ## Contenus et médias
 
 - Gabarit du serveur : `public/site-template.html`.
