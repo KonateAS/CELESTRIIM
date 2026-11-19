@@ -140,6 +140,21 @@ async function main() {
   if (cdcCover && cdcProject.coverImage?.startsWith("/illustrations/")) await prisma.project.update({ where: { id: cdcProject.id }, data: { coverImage: cdcCover } });
   await appendGallery(cdcProject.id, archiveCdcAssets);
 
+  await prisma.project.upsert({
+    where: { slug: "communication-evenementielle-production-audiovisuelle" },
+    update: {},
+    create: {
+      title: "Communication événementielle et production audiovisuelle",
+      slug: "communication-evenementielle-production-audiovisuelle",
+      client: "CELESTRIIUM · CATÉGORIE",
+      summary: "Présentation de cette catégorie de réalisation. Les références, prestations et éléments de contexte seront ajoutés après validation.",
+      challenge: "Présentation à compléter",
+      coverImage: "/illustrations/reference-audiovisuelle.svg",
+      status: PublicationStatus.PUBLISHED,
+      publishedAt: new Date("2026-11-19T12:00:00.000Z"),
+    },
+  });
+
   console.log(`Administrator, ${initialExpertises.length} expertise entries, ${archiveRivotraAssets.length + archiveCdcAssets.length} archive images, and the case studies are ready.`);
 }
 
