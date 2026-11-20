@@ -1,13 +1,15 @@
 /* Rendu des pages à partir de SITE (content.js). Aucune dépendance. */
 (async function(){
 try{const response=await fetch("/api/site-content",{headers:{Accept:"application/json"}});if(response.ok)Object.assign(SITE,await response.json())}catch{}
-const S=SITE, page=document.body.dataset.page, root=document.documentElement;
+const S=SITE, requestedPage=document.body.dataset.page, root=document.documentElement;
+const page=requestedPage==="detail"?(location.pathname.startsWith("/expertises/")?"expertise-detail":location.pathname.startsWith("/perspectives/")?"article-detail":"project-detail"):requestedPage;
 const FALLBACK="data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><rect width="640" height="360" fill="#d9d2bd"/><circle cx="320" cy="180" r="60" fill="none" stroke="#0f3d2e" stroke-width="6"/><text x="320" y="300" text-anchor="middle" font-family="sans-serif" fill="#0f3d2e">Image à fournir</text></svg>');
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const img=(s,a)=>`<img src="${esc(s)}" alt="${esc(a)}" loading="lazy" onerror="this.onerror=null;this.src='${FALLBACK}'">`;
 
 /* Thème : localStorage, sinon préférence système */
-let theme=localStorage.getItem("theme")||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");
+let theme="light";
+try{theme=localStorage.getItem("celestrium-theme")||localStorage.getItem("theme")||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light")}catch{theme=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"}
 root.dataset.theme=theme;
 
 const cur=h=>(location.pathname.endsWith(h)||(h==="index.html"&&page==="home")||(h==="realisations.html"&&page==="rivotra"))?' aria-current="page"':"";
@@ -42,8 +44,14 @@ const expertiseIcons=[
 ];
 const expertises=()=>`<div class="expertise-grid">${S.expertises.map((e,i)=>{const isFeatured=/\bRSE\b/i.test(e.t);return `<article class="card expertise-card${isFeatured?" expertise-card--focus":""}"><div class="expertise-card__icon">${expertiseIcons[i]}</div><h3>${esc(e.t)}</h3><p>${esc(e.d)}</p><p class="expertise-card__label"><strong>Besoins couverts</strong></p><ul>${e.n.map(x=>`<li>${esc(x)}</li>`).join("")}</ul><a class="expertise-card__link" href="contact.html?sujet=${encodeURIComponent(e.t)}"><span>Nous contacter</span><span aria-hidden="true">→</span></a></article>`}).join("")}</div>`;
 const stats=a=>`<div class="grid">${a.map(([n,l])=>{const target=Number(String(n).replace(/[^\d]/g,""));const prefix=String(n).match(/^[^\d]*/)[0];return `<div class="card scroll-reveal"><div class="stat"${target?` aria-label="${esc(n)}"`:""}>${target?`${prefix}<span class="count-up" data-count="${target}">0</span>`:esc(n)}</div>${l}</div>`}).join("")}</div>`;
+const reportChart=(title,items,unit,max,note)=>`<figure class="report-chart"><figcaption><h3>${esc(title)}</h3><p>${esc(note)}</p></figcaption><ol>${items.map(([label,value])=>`<li><span class="report-chart__label">${esc(label)}</span><span class="report-chart__track" aria-hidden="true"><span style="--bar-width:${(value/max*100).toFixed(1)}%"></span></span><strong class="report-chart__value">${new Intl.NumberFormat("fr-FR",{maximumFractionDigits:1}).format(value)}${unit}</strong></li>`).join("")}</ol></figure>`;
+const reportCharts=()=>`<div class="report-chart-grid">${reportChart("Répartition géographique des abonnés",R.facebook.followersByCity," %",42,R.facebook.followersNote)}${reportChart("Interactions par format de contenu",R.facebook.interactionsByFormat,"",1820,R.facebook.formatsNote)}</div><p class="report-chart-source">${esc(R.facebook.sourceNote)} ${esc(R.facebook.validationNote)}</p>`;
 
 const R=S.rivotra, C=S.cdcImmersion;
+const routeSlug=decodeURIComponent(location.pathname.split("/").filter(Boolean).pop()||"");
+const currentProject=S.projects.find(project=>project.slug===routeSlug||project.href===location.pathname)||null;
+const currentExpertise=S.expertises.find(expertise=>expertise.slug===routeSlug)||null;
+const currentArticle=S.articles.find(article=>article.slug===routeSlug)||null;
 const views={
 home:()=>`<section class="hero"><div class="hero__glow hero__glow--one" aria-hidden="true"></div><div class="hero__glow hero__glow--two" aria-hidden="true"></div><div class="hero__visual tilt" aria-hidden="true"><div class="hero__stack"><div class="hero__image-card hero__image-card--back">${img("assets/img/rivotra/rivotra-04.jpg","")}</div><div class="hero__image-card hero__image-card--middle">${img("assets/img/rivotra/rivotra-05.jpg","")}</div><div class="hero__image-card hero__image-card--front">${img("assets/img/rivotra/rivotra-06.jpg","")}</div></div></div><div class="wrap hero__content"><div class="hero__copy"><h1 class="hero__headline" aria-live="polite">${S.hero.slides.map((slide,i)=>`<span class="hero__headline-slide${i===0?" is-active":""}"${i===0?'':' aria-hidden="true"'}>${slide}</span>`).join("")}</h1><p class="hero__intro">${S.hero.text||"Conseil RSE, stratégie d’impact et projets responsables au service d’une performance qui dure."}</p><div class="hero__actions"><a class="btn hero__primary-cta" href="contact.html">Parlons de votre projet</a><a class="hero__secondary-cta golden-orbit" href="realisations.html">Découvrir nos réalisations</a></div></div></div><div class="hero__bottom"><p class="eyebrow">Conseil · activation · impact</p></div></section>`
  +`<section class="partner-ribbon" aria-label="Partenaires"><div class="wrap partner-ribbon__label">À nos côtés</div><div class="partner-ribbon__track" aria-hidden="true">${[0,1].map(()=>`<div class="partner-ribbon__group">${S.partnerBrands.map((name,i)=>`${i?'<span class="partner-ribbon__separator">✦</span>':""}<span class="partner-ribbon__brand">${esc(name)}</span>`).join("")}</div>`).join("")}</div><span class="visually-hidden">Partenaires : ${S.partnerBrands.map(esc).join(", ")}</span></section>`
@@ -56,19 +64,23 @@ about:()=>`<section class="section about-intro"><div class="wrap about-intro__gr
  +sec("Du terrain aux résultats",approachCards()+`<p class="about-method-note">${S.about.way}</p>`)
  +cta(),
 expertises:()=>sec("Expertises",expertises()),
+"expertise-detail":()=>currentExpertise?sec("Besoins couverts",`${currentExpertise.n?.length?`<ul>${currentExpertise.n.map(item=>`<li>${esc(item)}</li>`).join("")}</ul>`:""}<p class="section__action"><a class="btn btn--ghost golden-orbit" href="/contact">Parlons de votre projet <span aria-hidden="true">→</span></a></p>`):sec("Expertise",`<p>Cette expertise n’est pas disponible pour le moment.</p><a class="btn btn--ghost golden-orbit" href="/expertises">Voir toutes nos expertises</a>`),
 projects:()=>sec("Réalisations",projectCards()),
+"project-detail":()=>currentProject?sec("Le projet",`${currentProject.image?`<figure class="project-detail-cover">${img(currentProject.image,currentProject.alt||currentProject.title)}</figure>`:""}${currentProject.challenge?sec("Contexte et objectifs",`<p>${esc(currentProject.challenge)}</p>`,1):""}${currentProject.contribution?sec("Notre contribution",`<p>${esc(currentProject.contribution)}</p>`):""}${currentProject.results?sec("Résultats",`<p>${esc(currentProject.results)}</p>`,1):""}${currentProject.gallery?.length?sec("Galerie",gallerySlider(currentProject.gallery,currentProject.title)):""}${currentProject.videoUrl?sec("Vidéo du projet",`<video controls playsinline preload="metadata" src="${esc(currentProject.videoUrl)}">Votre navigateur ne peut pas lire cette vidéo.</video>`,1):""}${currentProject.note?`<p class="note">${esc(currentProject.note)}</p>`:""}<p class="section__action"><a class="btn btn--ghost golden-orbit" href="/realisations">Toutes les réalisations</a></p>`):sec("Réalisation",`<p>Cette réalisation n’est pas disponible pour le moment.</p><a class="btn btn--ghost golden-orbit" href="/realisations">Voir toutes les réalisations</a>`),
+"article-detail":()=>currentArticle?sec("Article",`${currentArticle.image?`<figure class="project-detail-cover">${img(currentArticle.image,currentArticle.alt||currentArticle.title)}</figure>`:""}<div class="article-body">${String(currentArticle.body||"").split(/\n{2,}/).filter(Boolean).map(paragraph=>`<p>${esc(paragraph).replace(/\n/g,"<br>")}</p>`).join("")}</div><p class="section__action"><a class="btn btn--ghost golden-orbit" href="/perspectives">Toutes les perspectives</a></p>`):sec("Perspective",`<p>Cet article n’est pas disponible pour le moment.</p><a class="btn btn--ghost golden-orbit" href="/perspectives">Voir toutes les perspectives</a>`),
 partners:()=>sec("Partenariats",`<p>${S.partners}</p>`)+cta(),
-articles:()=>sec("Perspectives",`<div class="grid">${S.articles.map(a=>`<article class="card scroll-reveal">${img(a.image,a.alt)}<h3>${esc(a.title)}</h3><p>${esc(a.summary)}</p><p class="note"><time datetime="${a.date}">${new Date(a.date).toLocaleDateString("fr-FR")}</time>${a.example?" · exemple à compléter":""}</p><a href="${a.href}">Lire →</a></article>`).join("")}</div>`),
-rivotra:()=>sec(esc((S.projects.find(p=>p.href==="rivotra-freedom-cup-2026.html")||S.projects[0]).title),`<p>${esc(R.intro)}</p>`)
+articles:()=>sec("Perspectives",S.articles.length?`<div class="grid">${S.articles.map(a=>`<article class="card scroll-reveal">${img(a.image,a.alt)}<h3>${esc(a.title)}</h3><p>${esc(a.summary)}</p><p class="note"><time datetime="${a.date}">${new Date(a.date).toLocaleDateString("fr-FR")}</time></p><a href="${a.href}">Lire →</a></article>`).join("")}</div>`:`<p class="empty-note">Nos premières perspectives seront publiées prochainement.</p>`),
+rivotra:()=>sec(esc((S.projects.find(p=>p.slug?.includes("rivotra"))||S.projects[0]).title),`<p>${esc(R.intro)}</p>`)
  +sec("Contexte et objectifs",`<p>${esc(R.context)}</p>`,1)
  +sec("Le rôle de CELESTRIIUM",`<p>${R.roleC}</p>`)+sec("Le rôle de CDC IMMERSION",`<p>${R.roleCDC}</p>`,1)
  +sec("Le tournoi",stats(R.tournament)+`<div style="height:1rem"></div>`+cards(R.champions))
  +sec("Résultats",stats(R.results)+`<p class="note">${esc(R.resultsNote)}</p>`,1)
- +sec("Relais radio",R.radio.map(t=>`<p>${t}</p>`).join(""))
+ +sec("Rayonnement numérique",reportCharts())
+ +sec("Relais radio",`${R.radio.map(t=>`<p>${esc(t)}</p>`).join("")}<p class="report-chart-source">${esc(R.radioNote)}</p>`)
  +sec("Galerie",`${gallerySlider(R.gallery,"RIVOTRA Freedom Cup 2026")}`,1)
  +sec("Vidéo",`<video controls playsinline preload="metadata" poster="${R.video.poster}"><source src="${R.video.src}" type="video/mp4">Votre navigateur ne lit pas cette vidéo.</video>`)
  +sec("Partenaires",`<p>${R.partners.join(" · ")}</p>`,1)+cta(),
-cdc:()=>sec(esc((S.projects.find(p=>p.href==="cdc-immersion.html")||S.projects[1]).title),`<p>${esc(C.intro)}</p>`)
+cdc:()=>sec(esc((S.projects.find(p=>p.slug==="cdc-immersion")||S.projects[1]).title),`<p>${esc(C.intro)}</p>`)
  +sec("Le principe de l’immersion",`<p>${C.context}</p>`,1)
  +sec("Galerie",`${gallerySlider(C.gallery,"CDC IMMERSION")}`)
  +cta(),
@@ -76,13 +88,15 @@ contact:()=>sec("Contact",`<p>Décrivez-nous votre besoin : nous prendrons le te
 <form id="form" action="/contact" method="post" novalidate>
 <div><label for="nom">Nom</label><input id="nom" name="name" required autocomplete="name" maxlength="120"><div class="err" id="e-nom"></div></div>
 <div><label for="org">Organisation (facultatif)</label><input id="org" name="organization" autocomplete="organization" maxlength="180"></div>
-<div><label for="email">Adresse e-mail</label><input id="email" name="email" type="email" required autocomplete="email" maxlength="254"><div class="err" id="e-email"></div></div>
+<div><label for="function">Fonction (facultatif)</label><input id="function" name="function" autocomplete="organization-title" maxlength="180"></div>
+<div><label for="email">E-mail professionnel</label><input id="email" name="email" type="email" required autocomplete="email" maxlength="254"><div class="err" id="e-email"></div></div>
 <div><label for="sujet">Sujet</label><input id="sujet" name="subject" required maxlength="180"><div class="err" id="e-sujet"></div></div>
 <div><label for="msg">Message</label><textarea id="msg" name="message" rows="6" required minlength="10" maxlength="5000"></textarea><div class="err" id="e-msg"></div></div>
 <label class="contact-consent"><input type="checkbox" name="privacyConsent" required><span>J’accepte que mes informations soient utilisées pour répondre à ma demande.</span></label><div class="err" id="e-consent"></div>
 <label class="visually-hidden" aria-hidden="true">Votre site web<input name="website" tabindex="-1" autocomplete="off"></label>
 <button class="btn" type="submit">Envoyer mon message</button><div id="status" role="status" aria-live="polite"></div></form>
-${S.contact.email?`<p>E-mail : ${esc(S.contact.email)}</p>`:""}`)
+${S.contact.email?`<p>E-mail : ${esc(S.contact.email)}</p>`:""}`),
+notFound:()=>sec("Page introuvable",`<p>Cette adresse n’existe pas ou a changé.</p><p><a class="btn btn--ghost golden-orbit" href="/">Revenir à l’accueil</a></p>`)
 };
 const pageHeadings={
   about:["À propos","Partir du terrain pour construire un impact durable.",S.about.mission],
@@ -92,18 +106,25 @@ const pageHeadings={
   articles:["Perspectives","Prendre du recul pour mieux agir.","Analyses, retours d’expérience et idées autour de l’impact et de la responsabilité."],
   rivotra:["Étude de cas","Le sport comme terrain d’activation et d’apprentissage.",R.intro],
   cdc:["Immersion audiovisuelle","Apprendre en situation réelle, au plus près du terrain.",C.intro],
+  "expertise-detail":[currentExpertise?.t||"Expertise", "Notre expertise au service de vos projets.", currentExpertise?.d||""],
+  "project-detail":[currentProject?.client||"Réalisation", currentProject?.title||"Découvrir le projet.", currentProject?.summary||""],
+  "article-detail":["Perspectives", currentArticle?.title||"Un regard pour aller plus loin.", currentArticle?.summary||""],
+  notFound:["CELESTRIIUM","Cette page a pris un détour.","La page demandée n’existe pas ou n’est plus disponible."],
   contact:["Contact","Parlons de votre prochain projet.","Décrivez-nous votre besoin : nous prendrons le temps d’en discuter."]
 };
-const pageHeading=page==="home"?"":(()=>{const [eyebrow,title,text]=pageHeadings[page];return `<section class="page-hero"><div class="wrap page-hero__content scroll-reveal"><p class="eyebrow">${eyebrow}</p><h1>${title}</h1><p>${text}</p></div></section>`})();
+const pageHeading=page==="home"?"":(()=>{const [eyebrow,title,text]=pageHeadings[page]||["CELESTRIIUM","Une page à découvrir.",""];return `<section class="page-hero"><div class="wrap page-hero__content scroll-reveal"><p class="eyebrow">${esc(eyebrow)}</p><h1>${esc(title)}</h1><p>${esc(text)}</p></div></section>`})();
 document.getElementById("app").innerHTML=header()+`<main id="main">${pageHeading}${views[page]()}</main>`+footer()+
-`<button class="icon-btn theme-toggle" id="theme" aria-label="Basculer entre thème clair et sombre">◐</button>`;
+`<div class="theme-switcher" role="group" aria-label="Thème d’affichage"><span>Thème</span><button type="button" data-theme-choice="light">Clair</button><button type="button" data-theme-choice="dark">Sombre</button></div>`;
 
 /* Menu mobile (clic + clavier, Échap ferme) et thème */
 const nav=document.getElementById("nav"),menu=document.getElementById("menu");
 const setMenu=o=>{nav.classList.toggle("open",o);menu.setAttribute("aria-expanded",o)};
 menu.onclick=()=>setMenu(!nav.classList.contains("open"));
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){setMenu(false);menu.focus()}});
-document.getElementById("theme").onclick=()=>{theme=theme==="dark"?"light":"dark";root.dataset.theme=theme;localStorage.setItem("theme",theme)};
+const themeButtons=[...document.querySelectorAll("[data-theme-choice]")];
+const applyTheme=value=>{theme=value==="dark"?"dark":"light";root.dataset.theme=theme;try{localStorage.setItem("celestrium-theme",theme)}catch{}themeButtons.forEach(button=>{const active=button.dataset.themeChoice===theme;button.classList.toggle("active",active);button.setAttribute("aria-pressed",String(active))})};
+applyTheme(theme);
+themeButtons.forEach(button=>button.addEventListener("click",()=>applyTheme(button.dataset.themeChoice)));
 
 /* Keep card animations active on every viewport; reduced motion still applies to ambient effects. */
 const preferReduced=matchMedia("(prefers-reduced-motion:reduce)").matches;

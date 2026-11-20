@@ -10,24 +10,13 @@ import bcrypt from "bcryptjs";
 import { ContactStatus, Prisma, PrismaClient, PublicationStatus } from "@prisma/client";
 import sharp from "sharp";
 import {
-  renderAbout,
   renderAdminContentEditor,
   renderAdminContentIndex,
   renderAdminDashboard,
   renderAdminLogin,
   renderAdminMedia,
   renderAdminMessages,
-  renderContact,
-  renderExpertiseDetail,
-  renderExpertises,
-  renderHome,
   renderNotFound,
-  renderPartnerships,
-  renderPerspectiveDetail,
-  renderPerspectives,
-  renderProjectDetail,
-  renderProjects,
-  renderSitePage,
 } from "./lib/site.mjs";
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
@@ -45,6 +34,10 @@ const MAX_CONTACT_BYTES = 12_000;
 const MAX_CONTENT_BYTES = 100_000;
 const MAX_MEDIA_BYTES = 5 * 1024 * 1024;
 const loginAttempts = new Map();
+
+function siteOrigin() {
+  return new URL(process.env.SITE_URL || `http://localhost:${PORT}`).origin;
+}
 
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
@@ -269,47 +262,16 @@ async function serveStatic(request, response, pathname) {
   return false;
 }
 
-async function renderPublicPage(pathname, searchParams) {
-  if (pathname === "/") return siteLayout(await renderHome(prisma, pathname));
-  if (pathname === "/contact") return siteLayout(renderContact(searchParams));
-  if (pathname === "/expertises") return siteLayout(await renderExpertises(prisma, pathname));
-  if (pathname.startsWith("/expertises/")) {
-    const item = await prisma.expertise.findFirst({ where: { slug: decodeURIComponent(pathname.slice("/expertises/".length)), status: PublicationStatus.PUBLISHED } });
-    return item ? siteLayout(renderExpertiseDetail(item, pathname), { title: `${item.title} — CELESTRIIUM`, description: item.summary }) : siteLayout(renderNotFound(pathname), { title: "Page introuvable — CELESTRIIUM", status: 404 });
-  }
-  if (pathname === "/realisations") return siteLayout(await renderProjects(prisma, pathname));
-  if (pathname.startsWith("/realisations/")) {
-    const slug = decodeURIComponent(pathname.slice("/realisations/".length));
-    const item = await prisma.project.findFirst({ where: { slug, status: PublicationStatus.PUBLISHED }, include: { gallery: { orderBy: { sortOrder: "asc" }, include: { mediaAsset: true } } } });
-    if (!item) return siteLayout(renderNotFound(pathname), { title: "Page introuvable — CELESTRIIUM", status: 404 });
-    const coverAsset = item.coverImage ? await prisma.mediaAsset.findUnique({ where: { storageKey: item.coverImage }, select: { altText: true } }) : null;
-    return siteLayout(renderProjectDetail(item, coverAsset?.altText, pathname), { title: `${item.title} — CELESTRIIUM`, description: item.summary });
-  }
-  if (pathname === "/perspectives") return siteLayout(await renderPerspectives(prisma, pathname));
-  if (pathname.startsWith("/perspectives/")) {
-    const item = await prisma.article.findFirst({ where: { slug: decodeURIComponent(pathname.slice("/perspectives/".length)), status: PublicationStatus.PUBLISHED } });
-    return item ? siteLayout(renderPerspectiveDetail(item, pathname), { title: `${item.title} — CELESTRIIUM`, description: item.excerpt }) : siteLayout(renderNotFound(pathname), { title: "Page introuvable — CELESTRIIUM", status: 404 });
-  }
-  if (pathname === "/a-propos" || pathname === "/partenariats") {
-    const item = await prisma.page.findFirst({ where: { slug: pathname.slice(1), status: PublicationStatus.PUBLISHED } });
-    if (pathname === "/partenariats") return siteLayout(renderPartnerships(item, pathname), { title: item?.seoTitle || "Partenariats — CELESTRIIUM", description: item?.seoDescription || item?.summary });
-    return siteLayout(renderAbout(item, pathname), { title: item?.seoTitle || "À propos — CELESTRIIUM", description: item?.seoDescription || item?.summary });
-  }
-  if (pathname === "/robots.txt") return { status: 200, body: "User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api\n" , contentType: "text/plain; charset=utf-8" };
-  if (pathname === "/sitemap.xml") return { status: 200, body: await renderSitemap(prisma), contentType: "application/xml; charset=utf-8" };
-  return siteLayout(renderNotFound(pathname), { title: "Page introuvable — CELESTRIIUM", status: 404 });
-}
-
 async function renderSitemap(db) {
-  const origin = (process.env.SITE_URL || `http://localhost:${PORT}`).replace(/\/$/, "");
+  const origin = siteOrigin();
   const [expertises, projects, articles, pages] = await Promise.all([
     db.expertise.findMany({ where: { status: PublicationStatus.PUBLISHED }, select: { slug: true, updatedAt: true } }),
     db.project.findMany({ where: { status: PublicationStatus.PUBLISHED }, select: { slug: true, updatedAt: true } }),
     db.article.findMany({ where: { status: PublicationStatus.PUBLISHED }, select: { slug: true, updatedAt: true } }),
     db.page.findMany({ where: { status: PublicationStatus.PUBLISHED }, select: { slug: true, updatedAt: true } }),
   ]);
-  const routes = ["/", "/a-propos", "/partenariats", "/expertises", "/realisations", "/perspectives", "/contact", ...expertises.map((item) => `/expertises/${item.slug}`), ...projects.map((item) => `/realisations/${item.slug}`), ...articles.map((item) => `/perspectives/${item.slug}`), ...pages.map((item) => `/${item.slug}`)];
-  return `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${routes.map((route) => `<url><loc>${escapeHtml(origin + route)}</loc></url>`).join("")}</urlset>`;
+  const routes = new Set(["/", "/a-propos", "/partenariats", "/expertises", "/realisations", "/perspectives", "/contact", ...expertises.map((item) => `/expertises/${item.slug}`), ...projects.map((item) => `/realisations/${item.slug}`), ...articles.map((item) => `/perspectives/${item.slug}`), ...pages.map((item) => `/${item.slug}`)]);
+  return `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${[...routes].map((route) => `<url><loc>${escapeHtml(origin + route)}</loc></url>`).join("")}</urlset>`;
 }
 
 async function adminRouter(request, response, url) {
@@ -556,15 +518,15 @@ async function getStaticSiteData() {
   try {
     const [expertises, projects, articles] = await Promise.all([
       prisma.expertise.findMany({ where: { status: PublicationStatus.PUBLISHED }, orderBy: { sortOrder: "asc" }, select: { title: true, slug: true, summary: true } }),
-      prisma.project.findMany({ where: { status: PublicationStatus.PUBLISHED }, orderBy: { publishedAt: "desc" }, take: 6, select: { title: true, slug: true, client: true, summary: true, coverImage: true, challenge: true, contribution: true, results: true, gallery: { orderBy: { sortOrder: "asc" }, select: { mediaAsset: { select: { storageKey: true, altText: true } } } } } }),
-      prisma.article.findMany({ where: { status: PublicationStatus.PUBLISHED }, orderBy: { publishedAt: "desc" }, take: 6, select: { title: true, slug: true, excerpt: true, coverImage: true, publishedAt: true } }),
+      prisma.project.findMany({ where: { status: PublicationStatus.PUBLISHED }, orderBy: { publishedAt: "desc" }, take: 6, select: { title: true, slug: true, client: true, summary: true, coverImage: true, challenge: true, contribution: true, results: true, videoUrl: true, gallery: { orderBy: { sortOrder: "asc" }, select: { mediaAsset: { select: { storageKey: true, altText: true } } } } } }),
+      prisma.article.findMany({ where: { status: PublicationStatus.PUBLISHED }, orderBy: { publishedAt: "desc" }, take: 6, select: { title: true, slug: true, excerpt: true, body: true, coverImage: true, publishedAt: true } }),
     ]);
-    if (expertises.length) site.expertises = expertises.map((item, index) => ({ ...(STATIC_SITE_DATA.expertises[index] || { n: [] }), t: item.title, d: item.summary || item.title }));
+    if (expertises.length) site.expertises = expertises.map((item, index) => ({ ...(STATIC_SITE_DATA.expertises.find((expertise) => expertise.slug === item.slug) || STATIC_SITE_DATA.expertises[index] || { n: [] }), slug: item.slug, t: item.title, d: item.summary || item.title }));
     if (projects.length) {
       site.projects = projects.map((item, index) => {
-        const fallback = STATIC_SITE_DATA.projects[index] || {};
-        const legacyHref = item.slug.includes("rivotra") ? "rivotra-freedom-cup-2026.html" : item.slug.includes("cdc") ? "cdc-immersion.html" : "realisations.html";
-        return { ...fallback, href: legacyHref, title: item.title, summary: item.summary || fallback.summary || "", image: item.coverImage || fallback.image || "public/illustrations/photos/community.jpg", alt: item.title, client: item.client || undefined };
+        const fallback = STATIC_SITE_DATA.projects.find((project) => project.slug === item.slug) || STATIC_SITE_DATA.projects[index] || {};
+        const gallery = item.gallery.map(({ mediaAsset }) => ({ src: mediaAsset.storageKey, alt: mediaAsset.altText || item.title, cap: mediaAsset.altText || item.title }));
+        return { ...fallback, slug: item.slug, href: `/realisations/${item.slug}`, title: item.title, summary: item.summary || fallback.summary || "", image: item.coverImage || fallback.image || "/illustrations/photos/community.jpg", alt: item.title, client: item.client || undefined, challenge: item.challenge, contribution: item.contribution, results: item.results, gallery, videoUrl: item.videoUrl };
       });
       const rivotra = projects.find((item) => item.slug.includes("rivotra"));
       if (rivotra) {
@@ -572,6 +534,8 @@ async function getStaticSiteData() {
         if (rivotra.challenge) site.rivotra.context = rivotra.challenge;
         if (rivotra.contribution) site.rivotra.roleC = rivotra.contribution;
         if (rivotra.results) site.rivotra.resultsNote = rivotra.results;
+      if (rivotra.videoUrl) site.rivotra.video.src = rivotra.videoUrl;
+      if (rivotra.coverImage) site.rivotra.video.poster = rivotra.coverImage;
         const gallery = rivotra.gallery.map(({ mediaAsset }) => ({ src: mediaAsset.storageKey, alt: mediaAsset.altText || rivotra.title, cap: mediaAsset.altText || rivotra.title }));
         if (gallery.length) site.rivotra.gallery = gallery;
       }
@@ -583,7 +547,7 @@ async function getStaticSiteData() {
         if (gallery.length) site.cdcImmersion.gallery = gallery;
       }
     }
-    if (articles.length) site.articles = articles.map((item) => ({ title: item.title, summary: item.excerpt, date: item.publishedAt?.toISOString().slice(0, 10) || "", image: item.coverImage || "public/illustrations/photos/market.jpg", alt: item.title, href: "perspectives.html", example: false }));
+    site.articles = articles.map((item) => ({ title: item.title, slug: item.slug, summary: item.excerpt, body: item.body, date: item.publishedAt?.toISOString().slice(0, 10) || "", image: item.coverImage || "/illustrations/photos/market.jpg", alt: item.title, href: `/perspectives/${item.slug}`, example: false }));
   } catch (error) {
     console.error("Le contenu public utilise les donn\u00e9es de secours :", error);
   }
@@ -605,6 +569,7 @@ const server = createServer(async (request, response) => {
         }
       }
       if (pathname === "/api/site-content") return json(response, 200, await getStaticSiteData());
+      const routePath = pathname.replace(/\/+$/, "") || "/";
       const legacyPages = {
         "/": "index.html", "/index.html": "index.html",
         "/a-propos": "a-propos.html", "/a-propos.html": "a-propos.html",
@@ -614,29 +579,51 @@ const server = createServer(async (request, response) => {
         "/contact": "contact.html", "/contact.html": "contact.html",
         "/realisations": "realisations.html", "/realisations.html": "realisations.html",
         "/realisations/cdc-immersion": "cdc-immersion.html", "/cdc-immersion.html": "cdc-immersion.html",
+        "/realisations/cdc-immersion.html": "cdc-immersion.html",
         "/realisations/rivotra-freedom-cup": "rivotra-freedom-cup-2026.html",
         "/realisations/rivotra-freedom-cup-2026": "rivotra-freedom-cup-2026.html",
+        "/realisations/rivotra-freedom-cup-2026.html": "rivotra-freedom-cup-2026.html",
         "/rivotra-freedom-cup-2026.html": "rivotra-freedom-cup-2026.html",
       };
-      const staticPage = legacyPages[pathname]
-        || (/^\/expertises\/[^/]+$/.test(pathname) ? "expertises.html" : null)
-        || (/^\/realisations\/[^/]+$/.test(pathname) ? "realisations.html" : null)
-        || (/^\/perspectives\/[^/]+$/.test(pathname) ? "perspectives.html" : null);
+      const staticPage = legacyPages[routePath]
+        || (/^\/(expertises|realisations|perspectives)\/[^/]+$/.test(routePath) ? "detail.html" : null);
       if (staticPage) {
-        const page = await readFile(path.join(ROOT, staticPage));
-        response.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Content-Length": page.length, "Cache-Control": "no-cache" });
+        let page = await readFile(path.join(ROOT, staticPage));
+        let status = 200;
+        const detail = routePath.match(/^\/(expertises|realisations|perspectives)\/([^/]+)$/);
+        if (staticPage === "detail.html" && detail) {
+          const [, section, slug] = detail;
+          const item = section === "expertises"
+            ? await prisma.expertise.findFirst({ where: { slug: decodeURIComponent(slug), status: PublicationStatus.PUBLISHED }, select: { title: true, summary: true } })
+            : section === "realisations"
+              ? await prisma.project.findFirst({ where: { slug: decodeURIComponent(slug), status: PublicationStatus.PUBLISHED }, select: { title: true, summary: true } })
+              : await prisma.article.findFirst({ where: { slug: decodeURIComponent(slug), status: PublicationStatus.PUBLISHED }, select: { title: true, excerpt: true } });
+          if (!item) {
+            page = await readFile(path.join(ROOT, "not-found.html"));
+            status = 404;
+          } else {
+            const title = item.title;
+            const description = item.summary || item.excerpt || title;
+            const canonical = new URL(routePath, `${siteOrigin()}/`).href;
+            const pageSeo = `<link rel="canonical" href="${escapeHtml(canonical)}"><meta property="og:title" content="${escapeHtml(title)}"><meta property="og:description" content="${escapeHtml(description)}"><meta property="og:url" content="${escapeHtml(canonical)}">`;
+            page = Buffer.from(page.toString("utf8").replace("<!--PAGE_TITLE-->", escapeHtml(`${title} — CELESTRIIUM`)).replace("<!--PAGE_DESCRIPTION-->", escapeHtml(description)).replace("<!--PAGE_SEO-->", pageSeo));
+          }
+        }
+        response.writeHead(status, { "Content-Type": "text/html; charset=utf-8", "Content-Length": page.length, "Cache-Control": "no-cache" });
         return response.end(request.method === "HEAD" ? undefined : page);
       }
       if (await serveStatic(request, response, pathname)) return;
       if (pathname === "/favicon.ico") return sendText(response, 404, "Not found");
-      if (pathname === "/robots.txt" || pathname === "/sitemap.xml") {
-        const page = await renderPublicPage(pathname, url.searchParams);
-        response.writeHead(page.status, { "Content-Type": page.contentType, "Cache-Control": "public, max-age=3600" });
-        return response.end(page.body);
+      if (pathname === "/robots.txt") return sendText(response, 200, "User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api\n");
+      if (pathname === "/sitemap.xml") {
+        const sitemap = await renderSitemap(prisma);
+        response.writeHead(200, { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600" });
+        return response.end(sitemap);
       }
       if (pathname === "/admin" || pathname.startsWith("/admin/")) return await adminRouter(request, response, url);
-      const page = await renderPublicPage(pathname.replace(/\/$/, "") || "/", url.searchParams);
-      return sendHtml(response, page);
+      const page = await readFile(path.join(ROOT, "not-found.html"));
+      response.writeHead(404, { "Content-Type": "text/html; charset=utf-8", "Content-Length": page.length, "Cache-Control": "no-cache" });
+      return response.end(request.method === "HEAD" ? undefined : page);
     }
     if (request.method === "POST" && pathname === "/contact") return await handleContact(request, response);
     if (request.method === "POST" && pathname.startsWith("/admin/")) return await adminRouter(request, response, url);

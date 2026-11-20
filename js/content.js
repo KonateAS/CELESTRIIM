@@ -33,16 +33,16 @@ const SITE = {
     way: "Diagnostic partagé, conception, coordination de terrain, communication responsable et restitution des résultats."
   },
   expertises: [
-    {t:"Stratégie et conseil RSE",d:"Structurer une démarche RSE cohérente, alignée sur la réalité de l’organisation.",n:["Formaliser vos engagements","Prioriser vos actions","Rendre votre démarche lisible"]},
-    {t:"Projets à impact",d:"Concevoir et piloter des projets sociaux ou environnementaux sur le terrain.",n:["Passer d’une idée à un projet","Coordonner les acteurs","Suivre et documenter les résultats"]},
-    {t:"Communication responsable",d:"Raconter vos actions avec exactitude, sans exagération.",n:["Valoriser vos actions réelles","Produire des contenus fidèles","Éviter l’affichage trompeur"]},
-    {t:"Partenariats et activation",d:"Créer des collaborations durables et activer les communautés autour d’un projet.",n:["Mettre en relation les acteurs","Organiser des événements","Mobiliser les communautés locales"]}
+    {slug:"strategie-conseil-rse",t:"Stratégie et conseil RSE",d:"Structurer une démarche RSE cohérente, alignée sur la réalité de l’organisation.",n:["Formaliser vos engagements","Prioriser vos actions","Rendre votre démarche lisible"]},
+    {slug:"projets-a-impact",t:"Projets à impact",d:"Concevoir et piloter des projets sociaux ou environnementaux sur le terrain.",n:["Passer d’une idée à un projet","Coordonner les acteurs","Suivre et documenter les résultats"]},
+    {slug:"communication-responsable",t:"Communication responsable",d:"Raconter vos actions avec exactitude, sans exagération.",n:["Valoriser vos actions réelles","Produire des contenus fidèles","Éviter l’affichage trompeur"]},
+    {slug:"partenariats-activation",t:"Partenariats et activation",d:"Créer des collaborations durables et activer les communautés autour d’un projet.",n:["Mettre en relation les acteurs","Organiser des événements","Mobiliser les communautés locales"]}
   ],
   partners: "CELESTRIIUM conçoit des collaborations entre entreprises, institutions, associations, acteurs locaux et communautés : cadrage des rôles, mise en relation, coordination et activation sur le terrain.",
   projects: [
-    {href:"rivotra-freedom-cup-2026.html", title:"RIVOTRA Freedom Cup 2026 — Le sport comme terrain d’activation et d’apprentissage", summary:"À Adzopé, une activation territoriale autour du football de proximité, associant RIVOTRA, une compétition Seniors et U17 et une immersion aux métiers de l’audiovisuel avec CDC IMMERSION.", image:"assets/img/rivotra-cover.jpg", alt:"Affiche de la RIVOTRA Freedom Cup 2026"},
-    {href:"cdc-immersion.html", title:"CDC IMMERSION — Découvrir les métiers de l’audiovisuel sportif", summary:"Une immersion pratique pour permettre à de jeunes participants de découvrir la couverture audiovisuelle d’un événement sportif, en situation réelle et avec encadrement.", image:"assets/img/cdc-immersion/cdc-immersion-01.jpg", alt:"Immersion CDC dans les métiers de l’audiovisuel sportif"},
-    {title:"Communication événementielle et production audiovisuelle", summary:"Présentation de cette catégorie de réalisation. Les références, prestations et éléments de contexte seront ajoutés après validation.", image:"/illustrations/reference-audiovisuelle.svg", alt:"Communication événementielle et production audiovisuelle", note:"Présentation à compléter"}
+    {slug:"rivotra-freedom-cup", href:"/realisations/rivotra-freedom-cup", title:"RIVOTRA Freedom Cup 2026 — Le sport comme terrain d’activation et d’apprentissage", summary:"À Adzopé, une activation territoriale autour du football de proximité, associant RIVOTRA, une compétition Seniors et U17 et une immersion aux métiers de l’audiovisuel avec CDC IMMERSION.", image:"assets/img/rivotra-cover.jpg", alt:"Affiche de la RIVOTRA Freedom Cup 2026"},
+    {slug:"cdc-immersion", href:"/realisations/cdc-immersion", title:"CDC IMMERSION — Découvrir les métiers de l’audiovisuel sportif", summary:"Une immersion pratique pour permettre à de jeunes participants de découvrir la couverture audiovisuelle d’un événement sportif, en situation réelle et avec encadrement.", image:"assets/img/cdc-immersion/cdc-immersion-01.jpg", alt:"Immersion CDC dans les métiers de l’audiovisuel sportif"},
+    {slug:"communication-evenementielle-audiovisuelle", href:"/realisations/communication-evenementielle-audiovisuelle", title:"Communication événementielle et production audiovisuelle", summary:"Présentation de cette catégorie de réalisation. Les références, prestations et éléments de contexte seront ajoutés après validation.", image:"/illustrations/reference-audiovisuelle.svg", alt:"Communication événementielle et production audiovisuelle", note:"Présentation à compléter"}
   ],
   partnerBrands: ["RIVOTRA","CDC IMMERSION"],
   rivotra: {
@@ -51,10 +51,19 @@ const SITE = {
     roleC:"Ingénierie, organisation, coordination, communication, production de contenus et activation territoriale.",
     roleCDC:"CDC IMMERSION a permis à 13 jeunes de découvrir et pratiquer des métiers liés à la couverture audiovisuelle sportive, en situation réelle et avec encadrement. Il s’agissait d’une immersion et non d’une formation diplômante.",
     tournament:[["16","équipes Seniors"],["7","équipes U17"]],
-    champions:[["Seniors","Champion : La Voix d’Adzopé FC"],["U17","Champion : FC Commi — finaliste : BMC Jr"]],
+    champions:[["Seniors","Champion : La Voix d’Adzopé FC"],["U17","Champion : FC Commi"]],
     results:[["≈ 172 300","vues"],["≈ 6 100","interactions"],["≈ 200","personnes par jour sur site (estimation)"]],
-    resultsNote:"Les vues ne représentent pas des personnes uniques. Ces indicateurs concernent la page sur la période observée et ne prouvent pas, à eux seuls, un effet commercial.",
-    radio:["Selon le bilan fourni, les rencontres ont été retransmises sur Kanien FM 99,9 à partir des quarts de finale.","Le comité d’organisation a présenté le bilan et les prochaines étapes sur Radio Cayat 96,5 FM le 29 juillet 2026."],
+    resultsNote:"Indicateurs issus du bilan opérationnel 2026. Les vues ne sont pas des personnes uniques et la fréquentation est estimative. Les captures Facebook couvrent des périodes différentes et ne doivent pas être additionnées.",
+    facebook:{
+      followersByCity:[["Abidjan",42],["Adzopé",35.2],["Bouaké",3.1],["San-Pédro",1.1],["Yamoussoukro",0.8]],
+      interactionsByFormat:[["Directs",1820],["Autres",1510],["Reels",1180],["Albums photos",662],["Photos",598]],
+      sourceNote:"Source : captures d’écran des statistiques Meta/Facebook de la page RIVOTRA Freedom Cup, de fin juin à début août 2026. Les fenêtres observées varient selon l’indicateur.",
+      followersNote:"Part des abonnés globaux de la page par ville ; cette répartition ne décrit pas l’origine géographique des vues.",
+      formatsNote:"Valeurs arrondies et catégories Meta. Elles n’indiquent pas que ces contenus ont tous été produits par les jeunes de CDC IMMERSION.",
+      validationNote:"Données et autorisations de publication validées par CELESTRIIUM."
+    },
+    radio:["Selon le bilan opérationnel communiqué par l’organisation, les rencontres à partir des quarts de finale ont été retransmises sur Radio Kanien FM, 99,9 MHz."],
+    radioNote:"La couverture effective, l’audience et l’autorisation de citer le diffuseur restent à confirmer. Aucun chiffre d’audience radio n’est ajouté aux statistiques Facebook.",
     gallery:Array.from({length:29},(_,i)=>({
       src:`assets/img/rivotra/rivotra-${String(i+1).padStart(2,"0")}.jpg`,
       alt:`Visuel ${i+1} fourni pour la RIVOTRA Freedom Cup 2026`,
@@ -72,6 +81,6 @@ const SITE = {
       cap:`CDC IMMERSION — visuel ${i+1}`
     }))
   },
-  articles:[{title:"Article d’exemple à compléter",summary:"Emplacement réservé à un article fourni par CELESTRIIUM.",date:"2026-01-01",image:"public/illustrations/photos/community.jpg",alt:"Rassemblement communautaire en extérieur, photo illustrative",href:"#",example:true}],
+  articles:[],
   footerText:"Agence de conseil et d’activation à impact basée en Côte d’Ivoire."
 };

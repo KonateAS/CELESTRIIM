@@ -1,6 +1,6 @@
 # CELESTRIIUM
 
-Site public serverisé avec Node.js, PostgreSQL et Prisma. Il comprend un formulaire de contact enregistré en base, une administration des pages et réalisations, une médiathèque et les modes clair et sombre.
+Site CELESTRIIUM : l’interface publique utilise le design HTML/CSS/JavaScript du site ; Node.js, PostgreSQL et Prisma gèrent les contenus, le formulaire de contact et le tableau de bord.
 
 ## Développement
 
@@ -33,12 +33,11 @@ Avant l’ouverture publique, vérifier `/healthz`, la connexion à `/admin/logi
 
 ## Contenus et médias
 
-- Gabarit du serveur : `public/site-template.html`.
-- Pages et composants HTML : `lib/site.mjs`.
-- Styles du site serverisé : `css/site.css`.
-- Scripts du site : `js/app.js`.
+- Pages publiques : fichiers HTML à la racine et composants rendus dans `js/main.js`.
+- Style public conservé : `css/style.css` ; données de secours : `js/content.js`.
+- Tableau de bord : gabarit `public/site-template.html`, composants `lib/site.mjs`, styles `css/site.css` et scripts `js/app.js`.
 - Données et migrations : `prisma/`.
-- Photos illustratives et crédits : `public/illustrations/photos/credits.md`.
-- Les fichiers `.html` historiques redirigent vers les routes serverisées quand le serveur est lancé.
+- Photos de réalisation : `assets/img/`, `assets/video/` et les médias validés dans `public/media/`.
+- Les URL propres et les anciennes adresses `.html` ouvrent les mêmes pages publiques quand le serveur est lancé.
 
 Ne jamais publier `.env`. Pour la production, utiliser un PostgreSQL hébergé, HTTPS, des sauvegardes et un stockage persistant pour les médias importés.
