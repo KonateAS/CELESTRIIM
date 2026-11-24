@@ -1,6 +1,6 @@
 # CELESTRIIUM
 
-Site CELESTRIIUM : l’interface publique utilise le design HTML/CSS/JavaScript du site ; Node.js, PostgreSQL et Prisma gèrent les contenus, le formulaire de contact et le tableau de bord.
+Site CELESTRIIUM : les pages publiques sont rendues par le serveur avec le design de `lib/site.mjs` et `css/site.css`. Node.js, PostgreSQL et Prisma gèrent les contenus, le formulaire de contact et le tableau de bord. Si PostgreSQL est injoignable, le serveur reprend les pages HTML de secours à la racine.
 
 ## Développement
 
@@ -33,9 +33,9 @@ Avant l’ouverture publique, vérifier `/healthz`, la connexion à `/admin/logi
 
 ## Contenus et médias
 
-- Pages publiques : fichiers HTML à la racine et composants rendus dans `js/main.js`.
-- Style public conservé : `css/style.css` ; données de secours : `js/content.js`.
-- Tableau de bord : gabarit `public/site-template.html`, composants `lib/site.mjs`, styles `css/site.css` et scripts `js/app.js`.
+- Pages publiques : rendu serveur dans `lib/site.mjs`, gabarit `public/site-template.html`, styles `css/site.css`, interactions `js/app.js`.
+- Secours si la base est indisponible : fichiers HTML à la racine, `js/main.js`, `css/style.css` et données `js/content.js`.
+- Tableau de bord : mêmes gabarit, composants et styles, routes sous `/admin`.
 - Données et migrations : `prisma/`.
 - Photos de réalisation : `assets/img/`, `assets/video/` et les médias validés dans `public/media/`.
 - Les URL propres et les anciennes adresses `.html` ouvrent les mêmes pages publiques quand le serveur est lancé.

@@ -10,13 +10,23 @@ import bcrypt from "bcryptjs";
 import { ContactStatus, Prisma, PrismaClient, PublicationStatus } from "@prisma/client";
 import sharp from "sharp";
 import {
+  renderAbout,
   renderAdminContentEditor,
   renderAdminContentIndex,
   renderAdminDashboard,
   renderAdminLogin,
   renderAdminMedia,
   renderAdminMessages,
+  renderContact,
+  renderExpertiseDetail,
+  renderExpertises,
+  renderHome,
   renderNotFound,
+  renderPartnerships,
+  renderPerspectiveDetail,
+  renderPerspectives,
+  renderProjectDetail,
+  renderProjects,
 } from "./lib/site.mjs";
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
@@ -48,10 +58,14 @@ function slugify(value) {
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 120);
 }
 
-function siteLayout(content, { title = "CELESTRIIUM — Conseil, impact, avenir", description = "CELESTRIIUM, agence de conseil et d’activation à impact en Côte d’Ivoire.", status = 200 } = {}) {
+function siteLayout(content, { title = "CELESTRIIUM — Conseil, impact, avenir", description = "CELESTRIIUM, agence de conseil et d’activation à impact en Côte d’Ivoire.", status = 200, canonical = "" } = {}) {
+  const seo = canonical
+    ? `<link rel="canonical" href="${escapeHtml(canonical)}"><meta property="og:title" content="${escapeHtml(title)}"><meta property="og:description" content="${escapeHtml(description)}"><meta property="og:url" content="${escapeHtml(canonical)}">`
+    : "";
   const html = TEMPLATE
     .replace("<!--PAGE_TITLE-->", escapeHtml(title))
     .replace("<!--PAGE_DESCRIPTION-->", escapeHtml(description))
+    .replace("<!--PAGE_SEO-->", seo)
     .replace("<!--SERVER_RENDERED_PAGE-->", content);
   return { status, body: html };
 }
@@ -64,9 +78,9 @@ function securityHeaders(response) {
   response.setHeader("Content-Security-Policy", "default-src 'self'; img-src 'self' data:; media-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'");
 }
 
-function sendHtml(response, page) {
+function sendHtml(response, page, method = "GET") {
   response.writeHead(page.status || 200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" });
-  response.end(page.body);
+  response.end(method === "HEAD" ? undefined : page.body);
 }
 
 function sendText(response, status, text) {
@@ -554,6 +568,57 @@ async function getStaticSiteData() {
   return site;
 }
 
+const PUBLIC_DESCRIPTION = "CELESTRIIUM, agence de conseil et d’activation à impact en Côte d’Ivoire.";
+const PROJECT_INCLUDE = { gallery: { orderBy: { sortOrder: "asc" }, include: { mediaAsset: true } } };
+
+function publishedPage(content, { title, description = PUBLIC_DESCRIPTION, status = 200, path = "/" } = {}) {
+  return siteLayout(content, { title, description, status, canonical: new URL(path, `${siteOrigin()}/`).href });
+}
+
+async function renderPublishedPage(routePath, searchParams) {
+  const published = { status: PublicationStatus.PUBLISHED };
+  if (routePath === "/" || routePath === "/index.html") {
+    return publishedPage(await renderHome(prisma, "/"), { title: "Accueil — CELESTRIIUM", path: "/" });
+  }
+  if (routePath === "/a-propos" || routePath === "/a-propos.html") {
+    const item = await prisma.page.findFirst({ where: { slug: "a-propos", ...published } });
+    return publishedPage(renderAbout(item, "/a-propos"), { title: item?.seoTitle || "À propos — CELESTRIIUM", description: item?.seoDescription || item?.summary || PUBLIC_DESCRIPTION, path: "/a-propos" });
+  }
+  if (routePath === "/partenariats" || routePath === "/partenariats.html") {
+    const item = await prisma.page.findFirst({ where: { slug: "partenariats", ...published } });
+    return publishedPage(renderPartnerships(item, "/partenariats"), { title: item?.seoTitle || "Partenariats — CELESTRIIUM", description: item?.seoDescription || item?.summary || PUBLIC_DESCRIPTION, path: "/partenariats" });
+  }
+  if (routePath === "/expertises" || routePath === "/expertises.html") {
+    return publishedPage(await renderExpertises(prisma, "/expertises"), { title: "Expertises — CELESTRIIUM", path: "/expertises" });
+  }
+  if (routePath === "/realisations" || routePath === "/realisations.html") {
+    return publishedPage(await renderProjects(prisma, "/realisations"), { title: "Réalisations — CELESTRIIUM", path: "/realisations" });
+  }
+  if (routePath === "/perspectives" || routePath === "/perspectives.html") {
+    return publishedPage(await renderPerspectives(prisma, "/perspectives"), { title: "Perspectives — CELESTRIIUM", path: "/perspectives" });
+  }
+  if (routePath === "/contact" || routePath === "/contact.html") {
+    return publishedPage(renderContact(searchParams), { title: "Contact — CELESTRIIUM", path: "/contact" });
+  }
+  const detail = routePath.match(/^\/(expertises|realisations|perspectives)\/([^/]+)$/);
+  if (!detail) return null;
+  const [, section, rawSlug] = detail;
+  const slug = decodeURIComponent(rawSlug);
+  if (section === "expertises") {
+    const item = await prisma.expertise.findFirst({ where: { slug, ...published } });
+    if (!item) return publishedPage(renderNotFound(routePath), { title: "Page introuvable — CELESTRIIUM", status: 404, path: routePath });
+    return publishedPage(renderExpertiseDetail(item, routePath), { title: `${item.title} — CELESTRIIUM`, description: item.summary || item.title, path: routePath });
+  }
+  if (section === "realisations") {
+    const item = await prisma.project.findFirst({ where: { slug, ...published }, include: PROJECT_INCLUDE });
+    if (!item) return publishedPage(renderNotFound(routePath), { title: "Page introuvable — CELESTRIIUM", status: 404, path: routePath });
+    return publishedPage(renderProjectDetail(item, item.title, routePath), { title: `${item.title} — CELESTRIIUM`, description: item.summary || item.title, path: routePath });
+  }
+  const item = await prisma.article.findFirst({ where: { slug, ...published } });
+  if (!item) return publishedPage(renderNotFound(routePath), { title: "Page introuvable — CELESTRIIUM", status: 404, path: routePath });
+  return publishedPage(renderPerspectiveDetail(item, routePath), { title: item.seoTitle || `${item.title} — CELESTRIIUM`, description: item.seoDescription || item.excerpt || item.title, path: routePath });
+}
+
 const server = createServer(async (request, response) => {
   securityHeaders(response);
   try {
@@ -570,6 +635,20 @@ const server = createServer(async (request, response) => {
       }
       if (pathname === "/api/site-content") return json(response, 200, await getStaticSiteData());
       const routePath = pathname.replace(/\/+$/, "") || "/";
+      const legacyAliases = {
+        "/cdc-immersion.html": "/realisations/cdc-immersion",
+        "/realisations/cdc-immersion.html": "/realisations/cdc-immersion",
+        "/rivotra-freedom-cup-2026.html": "/realisations/rivotra-freedom-cup",
+        "/realisations/rivotra-freedom-cup-2026": "/realisations/rivotra-freedom-cup",
+        "/realisations/rivotra-freedom-cup-2026.html": "/realisations/rivotra-freedom-cup",
+      };
+      if (legacyAliases[routePath]) return redirect(response, legacyAliases[routePath], 301);
+      try {
+        const rendered = await renderPublishedPage(routePath, url.searchParams);
+        if (rendered) return sendHtml(response, rendered, request.method);
+      } catch (error) {
+        console.error("Rendu public indisponible, reprise du site statique :", error);
+      }
       const legacyPages = {
         "/": "index.html", "/index.html": "index.html",
         "/a-propos": "a-propos.html", "/a-propos.html": "a-propos.html",
@@ -621,6 +700,12 @@ const server = createServer(async (request, response) => {
         return response.end(sitemap);
       }
       if (pathname === "/admin" || pathname.startsWith("/admin/")) return await adminRouter(request, response, url);
+      try {
+        await prisma.$queryRaw`SELECT 1`;
+        return sendHtml(response, publishedPage(renderNotFound(routePath), { title: "Page introuvable — CELESTRIIUM", status: 404, path: routePath }), request.method);
+      } catch (error) {
+        console.error("Page introuvable servie en HTML statique :", error.message);
+      }
       const page = await readFile(path.join(ROOT, "not-found.html"));
       response.writeHead(404, { "Content-Type": "text/html; charset=utf-8", "Content-Length": page.length, "Cache-Control": "no-cache" });
       return response.end(request.method === "HEAD" ? undefined : page);
@@ -636,7 +721,7 @@ const server = createServer(async (request, response) => {
   }
 });
 
-server.listen(PORT, "0.0.0.0", () => console.log(`CELESTRIIUM en HTML/CSS/JavaScript : http://localhost:${PORT}`));
+server.listen(PORT, "0.0.0.0", () => console.log(`CELESTRIIUM : http://localhost:${PORT}`));
 
 for (const signal of ["SIGINT", "SIGTERM"]) {
   process.on(signal, async () => {
